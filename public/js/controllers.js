@@ -30,6 +30,10 @@ function CurrentTournamentController() {
 }
 CurrentTournamentController.$inject = [];
 
+function GameController() {
+}
+GameController.$inject = [];
+
 
 function AccountController() {
 }

@@ -16,6 +16,10 @@ angular.module('shadowOrganizer', ['shadowOrganizer.filters', 'shadowOrganizer.s
 			templateUrl: 'partials/account',
 			controller: AccountController
 		});
+		$routeProvider.when('/game', {
+			templateUrl: 'partials/game',
+			controller: GameController
+		});
 		$routeProvider.otherwise({
 			redirectTo: '/tournaments'
 		});
