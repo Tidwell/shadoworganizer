@@ -1,11 +1,18 @@
 body {
-	padding: 30px 0px;
+	padding: 30px 0;
 }
 .chat-windows .chat {
 	height: 200px;
 	overflow-y: scroll;
 }
 
+.large-alert i {
+	font-size: 60px;
+}
+
+i.icon-user.disconnecting {
+	color: red;
+}
 
 /* Based on http://www.jimyi.com/content/brackets/bracket.css */
 .tournament4-wrap, .tournament8-wrap, .tournament16-wrap, .tournament32-wrap {
