@@ -2,7 +2,12 @@
 
 
 // Declare app level module which depends on filters, and services
-angular.module('shadowOrganizer', ['shadowOrganizer.filters', 'shadowOrganizer.services', 'shadowOrganizer.directives'])
+angular.module('shadowOrganizer', [
+	'shadowOrganizer.filters',
+	'shadowOrganizer.services',
+	'shadowOrganizer.directives',
+	'ui.bootstrap'
+])
 	.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
 		$routeProvider.when('/tournaments', {
 			templateUrl: 'partials/tournaments',
@@ -25,3 +30,4 @@ angular.module('shadowOrganizer', ['shadowOrganizer.filters', 'shadowOrganizer.s
 		});
 		$locationProvider.html5Mode(true);
 	}]);
+
