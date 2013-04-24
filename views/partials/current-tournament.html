@@ -4,8 +4,8 @@
 		<span class="clearfix"></span>
 		<div class="span6">
 			<div class="row-fluid" ng-show="tournament.started">
-				<div class="well" ng-show="currentGame.started">
-					<h4 class="span6">Round {{currentMatch.round}} - Game {{currentMatch.game}}</h4>
+				<div class="well" ng-show="currentGame.started && !currentMatch.winner">
+					<h4 class="span6">Round {{tournament.round}} - Game {{currentMatch.game}}</h4>
 					<h5 class="span6" style="text-align: right">Baduruu vs {{currentMatch.opponentName}} <button class="btn btn-danger" ng-show="!currentGame.result"><i class="icon-ban-circle"></i> Concede Game</button></h5>
 
 					<hr>
@@ -113,7 +113,10 @@
 								won the current game</strong><strong ng-show="currentGame.result=='draw'">the game was a draw</strong>.
 							</p>
 							<p>
-								firstTurn: {{currentGame.firstTurn}}
+								You have reported that <strong>
+										<span ng-show="currentGame.firstTurn=='self'">You</span>
+										<span ng-show="currentGame.firstTurn=='opponent'">{{currentMatch.opponentName}}</span>
+									went first</strong>.
 							</p>
 							<div class="clearfix"></div>
 							<p style="text-align: right">
@@ -159,7 +162,7 @@
 					</div>
 				</div>
 				<div class="well" ng-show="!currentGame.started">
-					<h4 class="span6">Round {{currentMatch.round}} - Game {{currentMatch.game}}</h4>
+					<h4 class="span6">Round {{tournament.round}} - Game {{currentMatch.game}}</h4>
 					<h5 class="span6" style="text-align: right">Baduruu vs {{currentMatch.opponentName}}</h5>
 
 					<hr>
@@ -168,8 +171,29 @@
 						<button class="btn btn-info pull-right" ng-show="currentMatch.game!=3 && !currentMatch.ready" ng-click="ready()">Ready</button>
 						<div class="clearfix"></div>
 						<p style="text-align: right">
-							<strong ng-show="currentMatch.oppReady">{{currentMatch.opponentName}} is ready for the next game.</strong><br />
-							<strong ng-show="currentMatch.ready">You are ready for the next game.</strong>
+							<strong ng-show="currentMatch.oppReady">{{currentMatch.opponentName}} is ready for the game.</strong><br />
+							<strong ng-show="currentMatch.ready">You are ready for the game.</strong>
+						</p>
+					</div>
+				</div>
+				<div class="well" ng-show="currentMatch.winner">
+					<h4 class="span6">Round {{tournament.round}}</h4>
+					<h5 class="span6" style="text-align: right">Baduruu vs {{currentMatch.opponentName}}</h5>
+
+					<hr>
+					<div class="alert alert-success" ng-show="currentMatch.winner=='self'">
+						<strong>You have won the round!</strong>
+						<button class="btn btn-info pull-right" ng-click="ready()" ng-show="!currentMatch.ready && tournament.round!=3">Next Round</button>
+						<div class="clearfix"></div>
+						<p style="text-align: right">
+							<strong ng-show="currentMatch.ready">You are ready for the next round.</strong>
+						</p>
+					</div>
+
+					<div class="alert alert-error" ng-show="currentMatch.winner=='opponent'">
+						<strong>{{currentMatch.opponentName}} won the round.</strong>
+						<p style="text-align: right">
+							You have been eliminated from the tournament.
 						</p>
 					</div>
 				</div>

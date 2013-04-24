@@ -31,15 +31,16 @@ function CurrentTournamentController($scope, $dialog) {
 	// be populated when returning from other pages
 	$scope.tournament = {
 		started: true,
-		players: 8
+		players: 8,
+		round: 1
 	};
 
 	$scope.currentMatch = {
 		opponentName: 'Alden the Brave',
 		game: 1,
-		round: 1,
 		ready: false,
-		oppReady: false
+		oppReady: false,
+		winner: null //opponent or self
 	};
 
 	$scope.currentGame = {
@@ -58,6 +59,15 @@ function CurrentTournamentController($scope, $dialog) {
 	//when the game starts, we want to reset the ready tracking
 	//so the server doesn't have to tell us (maybe we do want the server to tell us???)
 	$scope.$watch('currentGame.started', function() {
+		if ($scope.currentGame.started === true) {
+			$scope.currentMatch.ready = false;
+			$scope.currentMatch.oppReady = false;
+		}
+	});
+
+	//when a winner is declared, we want to reset the ready tracking
+	//so the server doesn't have to tell us (maybe we do want the server to tell us???)
+	$scope.$watch('currentMatch.winner', function() {
 		if ($scope.currentGame.started === true) {
 			$scope.currentMatch.ready = false;
 			$scope.currentMatch.oppReady = false;
@@ -117,7 +127,13 @@ function CurrentTournamentController($scope, $dialog) {
 		console.log('Confirming Result')
 		$scope.currentGame.resultConfirmed = true;
 		$scope.$digest();
-	},15000);
+	},10000);
+
+	setTimeout(function() {
+		console.log('Setting match winner')
+		$scope.currentMatch.winner = 'opponent';
+		$scope.$digest();
+	},2000);
 
 	*/
 
