@@ -31,41 +31,42 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr>
-				<td>Auto-Generated 8-Man</td>
-				<td>Deck Lock</td>
+			<tr ng-repeat="tournament in tournaments.tournaments" ng-class="{success: tournament.userEntered}">
+				<td>{{tournament.name}}</td>
+				<td>{{tournament.rules | implode}}</td>
 				<td>
-					<i class="shadow-crystals">SC</i> 200 / <i class="shadow-crystals">SC</i>100
+					<i class="shadow-crystals">SC</i> {{tournament.payout.1}} / <i class="shadow-crystals">SC</i> {{tournament.payout.2}}
 				</td>
-				<td>Not Started <span class="badge badge pull-right">1 / 8</span></td>
-				<td>Not Registered <button class="pull-right btn btn-small btn-success"><i class="icon-plus"></i> Join</button></td>
-			</tr>
-			<tr class="success">
-				<td>Auto-Generated 8-Man</td>
-				<td>Deck Lock</td>
 				<td>
-					<i class="shadow-crystals">SC</i> 200 / <i class="shadow-crystals">SC</i>100
+					<div ng-show="!tournament.started">
+						<span>Not Started</span>
+						<span class="badge badge pull-right" ng-class="{
+							'btn-info': tournament.players>4 && tournament.players < 7,
+							'btn-success': tournament.players>=7
+						}">
+							{{tournament.players}} / 8
+						</span>
+					</div>
+					<div ng-show="tournament.started">
+						{{tournament.startTime}}
+					</div>
 				</td>
-				<td>Not Started  <span class="badge badge-info pull-right">7 / 8</span></td>
-				<td>Registered <button class="pull-right btn btn-small btn-danger"><i class="icon-minus"></i> Leave</button></td>
-			</tr>
-			<tr>
-				<td><a href="/tournaments/results/456">Auto-Generated 8-Man</a></td>
-				<td>Deck Lock</td>
-				<td>
-					<i class="shadow-crystals">SC</i> 200 / <i class="shadow-crystals">SC</i>100
+
+
+				<td ng-show="!tournament.started">
+					<div ng-show="!tournament.userEntered">
+						Not Registered <button class="pull-right btn btn-small btn-success"><i class="icon-plus"></i> Join</button>
+					</div>
+					<div ng-show="tournament.userEntered">
+						Registered <button class="pull-right btn btn-small btn-danger"><i class="icon-minus"></i> Leave</button>
+					</div>
 				</td>
-				<td>08/28/2013 26:00</td>
-				<td>Playing</td>
-			</tr>
-			<tr>
-				<td><a href="/tournaments/results/789">Auto-Generated 8-Man</a></td>
-				<td>Deck Lock</td>
-				<td>
-					<i class="shadow-crystals">SC</i> 200 / <i class="shadow-crystals">SC</i>100
+				<td ng-show="tournament.started">
+					Playing
 				</td>
-				<td>08/28/2013 21:00</td>
-				<td>Finished</td>
+				<td ng-show="tournament.ended">
+					Finshed
+				</td>
 			</tr>
 		</tbody>
 	</table>

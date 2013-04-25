@@ -1,29 +1,11 @@
 'use strict';
 
 /* Controllers */
+//TODO
+//LIST EVENTS THAT CAN BE RECIEVED
 
-function TournamentsController($scope, $http) {
-	function getTournaments(cb) {
-		$http({method: 'GET', url: '/REST/tournaments'})
-			.success(function(data, status, headers, config) {
-				cb(data);
-				// this callback will be called asynchronously
-				// when the response is available
-			})
-			.error(function(data, status, headers, config) {
-				cb(data);
-				// called asynchronously if an error occurs
-				// or server returns response with an error status.
-			});
-	}
-
-	$scope.refresh = function() {
-		getTournaments(function(data) {
-			$scope.data = data;
-		});
-	};
-
-	$scope.refresh();
+function TournamentsController($scope, $http, tournaments) {
+	$scope.tournaments = tournaments.get();
 }
 
 function CurrentTournamentController($scope, $dialog) {
@@ -46,14 +28,16 @@ function CurrentTournamentController($scope, $dialog) {
 	$scope.currentGame = {
 		started: false,
 		password: null,
+		forceFirstTurn: null, //opponent or self
+		creator: null, //opponent or self
+
 		result: null, //win loss draw
+		firstTurn: null, //self opponent forget
 		resultConfirmed: false,
+
 		resultError: null, //winner or firstturn
 		oppResult: null, //win loss draw (from their perspective)
-		syncError: false,
-		firstTurn: null, //self opponent forget
-		forceFirstTurn: null, //opponent or self
-		creator: null //opponent or self
+		syncError: false
 	};
 
 	//when the game starts, we want to reset the ready tracking
