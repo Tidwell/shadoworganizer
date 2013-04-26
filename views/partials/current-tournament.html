@@ -3,7 +3,7 @@
 		<h3 class="pull-right">Auto-Generated 8-Man <button ng-click="drop()" class="btn btn-danger"><i class="icon-ban-circle"></i> Drop</button></h3>
 		<span class="clearfix"></span>
 		<div class="span6">
-			<div class="row-fluid" ng-show="tournament.started">
+			<div class="row-fluid" ng-show="tournament.started && !tournament.dropped">
 				<div class="well" ng-show="currentGame.started && !currentMatch.winner">
 					<h4 class="span6">Round {{tournament.round}} - Game {{currentMatch.game}}</h4>
 					<h5 class="span6" style="text-align: right">Baduruu vs {{currentMatch.opponentName}} <button ng-click="concede()" class="btn btn-danger" ng-show="!currentGame.result"><i class="icon-ban-circle"></i> Concede Game</button></h5>

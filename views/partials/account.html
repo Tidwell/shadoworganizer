@@ -2,39 +2,94 @@
 	<div class="row">
 		<h1>Account</h1>
 
-		<p>
-			Click the edit icons to change your email or in-game name.
-		</p>
+		<p>Click the edit icons to change your email or in-game name.</p>
+
+		<div ng-show="!emailEditing">
+			<p>
+				<strong>Email:</strong>
+				<span>
+					{{user.email}}
+					<a ng-click="edit('email')">
+						<i class="icon-edit"></i>
+					</a>
+				</span>
+			</p>
+		</div>
+
+		<div ng-show="emailEditing">
+			<p>
+				<form class="form-inline">
+					<strong>Email:</strong>
+					<input type="email" class="input" placeholder="Email" ng-model="emailEdited" />
+
+					<button type="submit" class="btn" ng-click="save('email')">Save</button>
+					<button ng-click="close('email')" class="btn">Cancel</button>
+				</form>
+			</p>
+		</div>
+
+		<div ng-show="!inGameNameEditing">
+			<p>
+				<strong>In-Game Name:</strong>
+				<span>
+					{{user.inGameName}}
+					<a ng-click="edit('inGameName')">
+						<i class="icon-edit"></i>
+					</a>
+				</span>
+			</p>
+		</div>
+
+		<div ng-show="inGameNameEditing">
+			<p>
+				<form class="form-inline">
+					<strong>In-Game Name:</strong>
+					<input type="text" class="input" placeholder="In-Game Name" ng-model="inGameNameEdited" />
+
+					<button type="submit" class="btn" ng-click="save('inGameName')">Save</button>
+					<button ng-click="close('inGameName')" class="btn">Cancel</button>
+				</form>
+			</p>
+		</div>
 
 		<p>
-			<strong>Email:</strong> {{user.email}} <i class="icon-edit"></i>
+			<a ng-click="edit('password')" ng-show="!passwordEditing">Change Password</a>
 		</p>
+		<div ng-show="passwordEditing">
+			<p>
+				<form class="form-inline">
+					<strong>Password:</strong>
+					<input type="password" class="input" placeholder="Password" ng-model="passwordEdited" />
 
-		<p>
-			<strong>In-Game Name:</strong> {{user.inGameName}} <i class="icon-edit"></i>
-		</p>
+					<button type="submit" class="btn" ng-click="save('password')">Save</button>
+					<button ng-click="close('password')" class="btn">Cancel</button>
 
-		<p>
-			<a href="/account/password">Change Password</a>
-		</p>
+				</form>
+			</p>
+		</div>
 
 		<hr />
 
 		<h2>Stats</h2>
 		<p>
-			<strong>Rating:</strong> {{user.rating}}
+			<strong>Rating:</strong>
+			{{user.rating}}
 		</p>
 		<p>
-			<strong>Tournament Wins:</strong> {{user.tournamentWins}}
+			<strong>Tournament Wins:</strong>
+			{{user.tournamentWins}}
 		</p>
 		<p>
-			<strong>Game Wins:</strong> {{user.games.wins}}
+			<strong>Game Wins:</strong>
+			{{user.games.wins}}
 		</p>
 		<p>
-			<strong>Game Losses:</strong> {{user.games.losses}}
+			<strong>Game Losses:</strong>
+			{{user.games.losses}}
 		</p>
 		<p>
-			<strong>Earnings:</strong> <i class="shadow-crystals">SC</i>{{user.earnings}}
+			<strong>Earnings:</strong>
+			<i class="shadow-crystals">SC</i>{{user.earnings}}
 		</p>
 
 		<hr />
@@ -57,7 +112,8 @@
 					</td>
 					<td>{{tournament.placing}}</td>
 					<td>
-						<i class="shadow-crystals">SC</i>{{tournament.payout}}
+						<i class="shadow-crystals">SC</i>
+						{{tournament.payout}}
 					</td>
 				</tr>
 			</tbody>

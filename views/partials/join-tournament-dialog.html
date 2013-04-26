@@ -1,0 +1,17 @@
+<div class="modal-header">
+  <h1>Tournament Joined!</h1>
+</div>
+<div class="modal-body">
+  <div class="alert alert-success">
+    <div class="large-alert">
+      <i class="icon-ok pull-left"></i>
+      <p>
+        You have joined {{tournament.name}}.  Would you like to go to the Current Tournament screen?
+      </p>
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button ng-click="close('redirect')" class="btn btn-primary">Take me to the Tournament</button>
+  <button ng-click="close()" class="btn btn">Stay on the Tournaments List</button>
+</div>

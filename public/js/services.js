@@ -33,22 +33,35 @@ Services.factory('tournaments', function($http, $rootScope) {
 });
 
 Services.factory('currentTournament', function($http, $rootScope) {
+	var tournament = {
+		active: false,
+		error: null
+	};
 	return {
 		get: function() {
-			var tournament = {
-				error: false
-			};
-
+			return tournament;
+		},
+		join: function(id,cb) {
 			$http({method: 'GET', url: '/REST/tournament'})
 				.success(function(data, status, headers, config) {
 					for (var property in data) {
 						tournament[property] = data[property];
+						tournament.active = true;
 					}
+					//todo switch this to be deferred
+					if (cb) { cb(); }
+
 				})
 				.error(function(data, status, headers, config) {
 					tournament.error = 'Error getting tournament list';
 				});
 
+			return tournament;
+		},
+		drop: function(cb) {
+			tournament.active = false;
+			//send to server
+			if (cb) { cb(); }
 			return tournament;
 		}
 	};
@@ -99,13 +112,16 @@ Services.factory('currentGame', function($http, $rootScope) {
 });
 
 Services.factory('user', function($http, $rootScope) {
+	var user = {
+		error: false,
+		authed: false
+	};
+
 	return {
 		get: function() {
-			var user = {
-				error: false,
-				authed: false
-			};
-
+			return user;
+		},
+		login: function(email,password) {
 			$http({method: 'GET', url: '/REST/user'})
 				.success(function(data, status, headers, config) {
 					for (var property in data) {
@@ -117,6 +133,9 @@ Services.factory('user', function($http, $rootScope) {
 				});
 
 			return user;
+		}, register: function() {
+			//TODO
+			return this.login();
 		}
 	};
 });

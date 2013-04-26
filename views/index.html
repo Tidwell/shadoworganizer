@@ -30,15 +30,16 @@
 						<!--<li ng-class="navClass('game')">
 							<a href="/game">Game</a>
 						</li>-->
-						<li ng-class="navClass('current-tournament')">
+						<li ng-class="navClass('current-tournament')" ng-show="tournament.active">
 							<a href="/current-tournament">Current Tournament</a>
 						</li>
 					</ul>
 
 					<form class="navbar-form pull-right" ng-show="!user.authed">
-						<input class="span2" type="text" placeholder="Email">
-						<input class="span2" type="password" placeholder="Password">
-						<button type="submit" class="btn">Sign in</button>
+						<input class="span2" type="text" placeholder="Email" ng-model="email">
+						<input class="span2" type="password" placeholder="Password" ng-model="password">
+						<button type="submit" class="btn" ng-click="login()">Login</button>
+						<button type="submit" class="btn" ng-click="register()">Register</button>
 					</form>
 					<ul class="nav pull-right" ng-show="user.authed">
 						<li ng-class="navClass('account')">

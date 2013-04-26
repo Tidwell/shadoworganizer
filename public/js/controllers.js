@@ -4,8 +4,10 @@
 //TODO
 //LIST EVENTS THAT CAN BE RECIEVED
 
-function TournamentsController($scope, $http, tournaments) {
+function TournamentsController($scope, $http, $location, tournaments, user, currentTournament, $dialog) {
+	$scope.currentTournament = currentTournament.get();
 	$scope.tournaments = tournaments.get();
+	$scope.user = user.get();
 
 	//when we get new tournaments we want to check to see if the player is
 	//in the list of users and set a flag on the tournament if they are
@@ -26,16 +28,33 @@ function TournamentsController($scope, $http, tournaments) {
 
 	};
 
-	$scope.joinTournament = function() {
+	$scope.joinTournament = function(id) {
 		//send to server
-
+		$scope.currentTournament = currentTournament.join(id, function() {
+			if ($scope.currentTournament.active) {
+				var d = $dialog.dialog({
+					backdrop: true,
+					keyboard: true,
+					backdropClick: true,
+					templateUrl: 'partials/join-tournament-dialog',
+					controller: 'JoinTournamentDialogController'
+				});
+				d.open().then(function(result) {
+					if (result) {
+						$location.path('current-tournament');
+					}
+				});
+			}
+		});
 	};
+
 }
 
-function CurrentTournamentController($scope, $dialog, currentTournament, currentMatch, currentGame) {
+function CurrentTournamentController($scope, $location, $dialog, currentTournament, currentMatch, currentGame, user) {
 	$scope.tournament = currentTournament.get();
 	$scope.currentMatch = currentMatch.get();
 	$scope.currentGame = currentGame.get();
+	$scope.user = user.get();
 
 	//when the game starts, we want to reset the ready tracking
 	//so the server doesn't have to tell us (maybe we do want the server to tell us???)
@@ -78,7 +97,7 @@ function CurrentTournamentController($scope, $dialog, currentTournament, current
 
 	$scope.drop = function() {
 		//send to server
-
+		$scope.currentTournament = currentTournament.drop();
 	};
 
 	$scope.concede = function() {
@@ -103,6 +122,38 @@ function CurrentTournamentController($scope, $dialog, currentTournament, current
 			}
 		});
 	};
+
+	$scope.drop = function() {
+		var d = $dialog.dialog({
+			backdrop: true,
+			keyboard: true,
+			backdropClick: true,
+			templateUrl: 'partials/confirm-drop-dialog',
+			controller: 'DropDialogController'
+		});
+		d.open().then(function(result) {
+			if (result) {
+				currentTournament.drop(function() {
+					var d = $dialog.dialog({
+						backdrop: true,
+						keyboard: true,
+						backdropClick: true,
+						templateUrl: 'partials/dropped-dialog',
+						controller: 'DroppedController'
+					});
+					d.open().then(function(result) {
+						$location.path('/tournaments');
+					});
+				});
+			}
+		});
+	};
+
+	$scope.$watch('user', function() {
+		if (!$scope.user.authed) {
+			$location.path('/tournaments');
+		}
+	});
 
 
 	/* visual tests
@@ -130,6 +181,26 @@ function CurrentTournamentController($scope, $dialog, currentTournament, current
 }
 
 
+function DropDialogController($scope, dialog) {
+	$scope.close = function(result) {
+		dialog.close(result);
+	};
+}
+
+function DroppedController($scope, dialog) {
+	$scope.close = function(result) {
+		dialog.close(result);
+	};
+}
+
+function JoinTournamentDialogController($scope, dialog, currentTournament) {
+	$scope.tournament = currentTournament.get();
+
+	$scope.close = function(result) {
+		dialog.close(result);
+	};
+}
+
 function FirstPlayerDialogController($scope, dialog, currentMatch) {
 	$scope.currentMatch = currentMatch.get();
 
@@ -143,12 +214,58 @@ function GameController() {
 GameController.$inject = [];
 
 
-function AccountController($scope,user) {
+function AccountController($scope, $location, user) {
 	$scope.user = user.get();
+
+	if (!$scope.user.authed) {
+		$location.path('/tournaments');
+	}
+
+	//copy over the email/ingame whenever it changes
+	$scope.$watch('user.email',function() {
+		$scope.emailEdited = $scope.user.email;
+	});
+	$scope.$watch('user.inGameName',function() {
+		$scope.inGameNameEdited = $scope.user.inGameName;
+	});
+
+	$scope.edit = function(property) {
+		$scope[property+'Editing'] = true;
+	};
+
+	$scope.close = function(property) {
+		$scope[property+'Editing'] = false;
+	};
+
+	$scope.save = function(property) {
+		//we use the convention that the inputs have an ng-model of propertyEdited (eg. emailEdited)
+		$scope.user[property] = $scope[property+'Edited'];
+		//send to server
+
+		$scope.close(property);
+	};
 }
 
-function NavCtrl($scope,$location,user) {
+function NavCtrl($scope, $location, user, currentTournament) {
+	$scope.tournament = currentTournament.get();
 	$scope.user = user.get();
+
+	$scope.email = '';
+	$scope.password = '';
+
+	$scope.login = function() {
+		$scope.user = user.login({
+			email: $scope.email,
+			password: $scope.password
+		});
+	};
+
+	$scope.register = function() {
+		$scope.user = user.register({
+			email: $scope.email,
+			password: $scope.password
+		});
+	};
 
 	$scope.navClass = function (page) {
         var currentRoute = $location.path().substring(1) || 'home';
