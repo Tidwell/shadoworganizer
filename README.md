@@ -60,14 +60,10 @@ Allow creating tournaments with prize-request email generation and alternate rul
 
 Audio and Title bar notifications
 
+Better responsiveness (Remove sign in from dropdown, item ordering, etc)
 
 ##Pipe dreams
 
 Sealed (3d support through the godstcg engine)
 
 Draft (3d support through the godstcg engine)
-
-
-
-
-Remove sign in from dropdown.
