@@ -7,11 +7,11 @@
 		</p>
 
 		<p>
-			<strong>Email:</strong> johndoe@johndoe.com <i class="icon-edit"></i>
+			<strong>Email:</strong> {{user.email}} <i class="icon-edit"></i>
 		</p>
 
 		<p>
-			<strong>In-Game Name:</strong> johndoe <i class="icon-edit"></i>
+			<strong>In-Game Name:</strong> {{user.inGameName}} <i class="icon-edit"></i>
 		</p>
 
 		<p>
@@ -22,10 +22,10 @@
 
 		<h2>Games</h2>
 		<p>
-			<strong>Wins:</strong> 3
+			<strong>Wins:</strong> {{user.games.wins}}
 		</p>
 		<p>
-			<strong>Losses:</strong> 1
+			<strong>Losses:</strong> {{user.games.losses}}
 		</p>
 
 		<hr />
@@ -41,26 +41,15 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr>
-					<td>08/28/2013 22:00</td>
+				<tr ng-repeat="tournament in user.tournaments">
+					<td>{{tournament.startTime}}</td>
 					<td>
-						<a href="/tournaments/results/123">Auto-Generated 8-Man</a>
+						<a href="/tournaments/results/{{tournament.id}}">{{tournament.name}}</a>
 					</td>
-					<td>1st</td>
+					<td>{{tournament.placing}}</td>
 					<td>
 						<i class="shadow-crystals">SC</i>
-						200
-					</td>
-				</tr>
-				<tr>
-					<td>08/28/2013 26:00</td>
-					<td>
-						<a href="/tournaments/results/456">Auto-Generated 8-Man</a>
-					</td>
-					<td>3rd (tied)</td>
-					<td>
-						<i class="shadow-crystals">SC</i>
-						0
+						{{tournament.payout}}
 					</td>
 				</tr>
 			</tbody>

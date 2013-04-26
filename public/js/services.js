@@ -3,9 +3,7 @@
 /* Services */
 
 
-// Demonstrate how to register services
-// In this case it is a simple value service.
-angular.module('shadowOrganizer.services', []).value('version', '0.1');
+angular.module('shadowOrganizer.services', []).value('version', '0.1 (alpha)');
 
 angular.module('shadowOrganizer.services').factory('tournaments', function($http, $rootScope) {
 	return {
@@ -90,6 +88,29 @@ angular.module('shadowOrganizer.services').factory('currentGame', function($http
 				});
 
 			return game;
+		}
+	};
+});
+
+angular.module('shadowOrganizer.services').factory('user', function($http, $rootScope) {
+	return {
+		get: function() {
+			var user = {
+				error: false,
+				authed: false
+			};
+
+			$http({method: 'GET', url: '/REST/user'})
+				.success(function(data, status, headers, config) {
+					for (var property in data) {
+						user[property] = data[property];
+					}
+				})
+				.error(function(data, status, headers, config) {
+					user.error = data;
+				});
+
+			return user;
 		}
 	};
 });

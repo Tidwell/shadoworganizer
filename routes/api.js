@@ -29,7 +29,7 @@ exports.tournament = function(req,res) {
 	res.jsonp({
 		name: 'Auto-Generated 8-Man',
 		id: '123456',
-		started: true,
+		started: false,
 		ended: false,
 		round: 1,
 		rules: ['Hero Lock', 'Deck Lock'],
@@ -88,3 +88,29 @@ exports.game = function(req,res) {
 		syncError: false
 	});
 };
+
+exports.user = function(req,res) {
+	res.jsonp({
+		inGameName: 'Tidwell',
+		email: 'aaron.tidwell@gmail.com',
+		authed: true,
+		games: {
+			wins: 1,
+			losses: 5
+		},
+		tournaments: [{
+			name: 'Auto-Generated 8-Man',
+			id: '123456',
+			startTime: new Date(),
+			placing: '1st',
+			payout: 200
+		},
+		{
+			name: 'Auto-Generated 8-Man',
+			id: '1234',
+			startTime: new Date(),
+			placing: '3rd (tied)',
+			payout: 0
+		}]
+	});
+}

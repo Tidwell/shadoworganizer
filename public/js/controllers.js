@@ -124,11 +124,13 @@ function GameController() {
 GameController.$inject = [];
 
 
-function AccountController() {
+function AccountController($scope,user) {
+	$scope.user = user.get();
 }
-AccountController.$inject = [];
 
-function NavCtrl($scope,$location) {
+function NavCtrl($scope,$location,user) {
+	$scope.user = user.get();
+
 	$scope.navClass = function (page) {
         var currentRoute = $location.path().substring(1) || 'home';
         return page === currentRoute ? 'active' : '';
