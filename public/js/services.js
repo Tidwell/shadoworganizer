@@ -2,10 +2,16 @@
 
 /* Services */
 
+var Services = angular.module('shadowOrganizer.services', [])
 
-angular.module('shadowOrganizer.services', []).value('version', '0.1 (alpha)');
+Services.value('version', '0.1 (alpha)');
 
-angular.module('shadowOrganizer.services').factory('tournaments', function($http, $rootScope) {
+/*Rule definitions*/
+Services.value('herolock', 'Your hero may not be changed. Your deck may be changed between rounds/games.');
+Services.value('decklock', 'Your hero and deck may not be changed between rounds/games');
+Services.value('sideboard', 'Your deck may be changed between games by making 1:1 substitutions from your 15-card sideboard.');
+
+Services.factory('tournaments', function($http, $rootScope) {
 	return {
 		get: function() {
 			var tournaments = {
@@ -26,7 +32,7 @@ angular.module('shadowOrganizer.services').factory('tournaments', function($http
 	};
 });
 
-angular.module('shadowOrganizer.services').factory('currentTournament', function($http, $rootScope) {
+Services.factory('currentTournament', function($http, $rootScope) {
 	return {
 		get: function() {
 			var tournament = {
@@ -48,7 +54,7 @@ angular.module('shadowOrganizer.services').factory('currentTournament', function
 	};
 });
 
-angular.module('shadowOrganizer.services').factory('currentMatch', function($http, $rootScope) {
+Services.factory('currentMatch', function($http, $rootScope) {
 	return {
 		get: function() {
 			var match = {
@@ -70,7 +76,7 @@ angular.module('shadowOrganizer.services').factory('currentMatch', function($htt
 	};
 });
 
-angular.module('shadowOrganizer.services').factory('currentGame', function($http, $rootScope) {
+Services.factory('currentGame', function($http, $rootScope) {
 	return {
 		get: function() {
 			var game = {
@@ -92,7 +98,7 @@ angular.module('shadowOrganizer.services').factory('currentGame', function($http
 	};
 });
 
-angular.module('shadowOrganizer.services').factory('user', function($http, $rootScope) {
+Services.factory('user', function($http, $rootScope) {
 	return {
 		get: function() {
 			var user = {

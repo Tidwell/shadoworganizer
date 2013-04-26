@@ -32,7 +32,7 @@ exports.tournament = function(req,res) {
 		started: false,
 		ended: false,
 		round: 1,
-		rules: ['Hero Lock', 'Deck Lock'],
+		rules: ['Hero Lock', 'Deck Lock', 'Sideboard'],
 		payout: {
 			1: 200,
 			2: 100
@@ -111,6 +111,9 @@ exports.user = function(req,res) {
 			startTime: new Date(),
 			placing: '3rd (tied)',
 			payout: 0
-		}]
+		}],
+		rating: 1800,
+		tournamentWins: 2,
+		earnings: 1000
 	});
 }

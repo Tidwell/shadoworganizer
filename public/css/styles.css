@@ -14,6 +14,17 @@ i.icon-user.disconnecting {
 	color: red;
 }
 
+i.shadow-crystals {
+	background-image: url('/images/shadow-crystal-icon.png');
+	background-size: contain;
+	height: .9em;
+	width: 1em;
+	text-indent: -999px;
+	display: inline-block;
+	background-repeat: no-repeat;
+}
+
+
 /* Based on http://www.jimyi.com/content/brackets/bracket.css */
 .tournament4-wrap, .tournament8-wrap, .tournament16-wrap, .tournament32-wrap {
 	text-align: center;

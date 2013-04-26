@@ -20,12 +20,21 @@
 
 		<hr />
 
-		<h2>Games</h2>
+		<h2>Stats</h2>
 		<p>
-			<strong>Wins:</strong> {{user.games.wins}}
+			<strong>Rating:</strong> {{user.rating}}
 		</p>
 		<p>
-			<strong>Losses:</strong> {{user.games.losses}}
+			<strong>Tournament Wins:</strong> {{user.tournamentWins}}
+		</p>
+		<p>
+			<strong>Game Wins:</strong> {{user.games.wins}}
+		</p>
+		<p>
+			<strong>Game Losses:</strong> {{user.games.losses}}
+		</p>
+		<p>
+			<strong>Earnings:</strong> <i class="shadow-crystals">SC</i>{{user.earnings}}
 		</p>
 
 		<hr />
@@ -48,8 +57,7 @@
 					</td>
 					<td>{{tournament.placing}}</td>
 					<td>
-						<i class="shadow-crystals">SC</i>
-						{{tournament.payout}}
+						<i class="shadow-crystals">SC</i>{{tournament.payout}}
 					</td>
 				</tr>
 			</tbody>

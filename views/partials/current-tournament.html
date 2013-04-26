@@ -291,10 +291,16 @@
 				<div class="row-fluid">
 				</div>
 
-				<div class="row-fluid" ng-show="tournament.started">
+				<div class="row-fluid">
 					<h4>Round 1</h4>
-					<p><strong>Rules:</strong> <span class="pull-right">Deck Lock (decks may <strong>not</strong> be changed between rounds/games)</span></p>
-					<div class="row-fluid">
+					<strong>Rules:</strong>
+					<span class="pull-right span10" ng-repeat="rule in tournament.rules">
+						<strong>{{rule}}:</strong>
+						<span hero-lock ng-show="rule == 'Hero Lock'"></span>
+						<span deck-lock ng-show="rule == 'Deck Lock'"></span>
+						<span sideboard ng-show="rule == 'Sideboard'"></span>
+					</span>
+					<div class="row-fluid" ng-show="tournament.started">
 						<div class="tournament8-wrap">
 							<div class="round4-top winner4">{{tournament.winner}}</div>
 							<div class="round3-topwrap">

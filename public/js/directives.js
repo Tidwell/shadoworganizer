@@ -9,6 +9,21 @@ Directives.directive('appVersion', function(version) {
         elm.text(version);
     };
 });
+Directives.directive('heroLock', function(herolock) {
+    return function(scope, elm, attrs) {
+        elm.text(herolock);
+    };
+});
+Directives.directive('deckLock', function(decklock) {
+    return function(scope, elm, attrs) {
+        elm.text(decklock);
+    };
+});
+Directives.directive('sideboard', function(sideboard) {
+    return function(scope, elm, attrs) {
+        elm.text(sideboard);
+    };
+});
 
 //for bootstrap tabs
 Directives.directive('showtab', function() {
