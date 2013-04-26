@@ -40,10 +40,7 @@
 				<td>
 					<div ng-show="!tournament.started">
 						<span>Not Started</span>
-						<span class="badge badge pull-right" ng-class="{
-							'btn-info': tournament.players>4 && tournament.players < 7,
-							'btn-success': tournament.players>=7
-						}">
+						<span class="badge badge pull-right" gameplayersclass="tournament.players">
 							{{tournament.players}} / 8
 						</span>
 					</div>

@@ -6,39 +6,26 @@
 
 function TournamentsController($scope, $http, tournaments) {
 	$scope.tournaments = tournaments.get();
+
+	//when we get new tournaments we want to check to see if the player is
+	//in the list of users and set a flag on the tournament if they are
+	$scope.$watch('tournaments.tournaments', function() {
+		$scope.tournaments.tournaments.forEach(function(tournament) {
+			if (!tournament.started) {
+				tournament.users.forEach(function(user){
+					if (user.id === 'qwe') {
+						tournament.userEntered = true;
+					}
+				});
+			}
+		});
+	});
 }
 
-function CurrentTournamentController($scope, $dialog) {
-	// TODO move all these to a shared service so they can
-	// be populated when returning from other pages
-	$scope.tournament = {
-		started: true,
-		players: 8,
-		round: 1
-	};
-
-	$scope.currentMatch = {
-		opponentName: 'Alden the Brave',
-		game: 1,
-		ready: false,
-		oppReady: false,
-		winner: null //opponent or self
-	};
-
-	$scope.currentGame = {
-		started: false,
-		password: null,
-		forceFirstTurn: null, //opponent or self
-		creator: null, //opponent or self
-
-		result: null, //win loss draw
-		firstTurn: null, //self opponent forget
-		resultConfirmed: false,
-
-		resultError: null, //winner or firstturn
-		oppResult: null, //win loss draw (from their perspective)
-		syncError: false
-	};
+function CurrentTournamentController($scope, $dialog, currentTournament, currentMatch, currentGame) {
+	$scope.tournament = currentTournament.get();
+	$scope.currentMatch = currentMatch.get();
+	$scope.currentGame = currentGame.get();
 
 	//when the game starts, we want to reset the ready tracking
 	//so the server doesn't have to tell us (maybe we do want the server to tell us???)
@@ -124,8 +111,9 @@ function CurrentTournamentController($scope, $dialog) {
 }
 
 
-function FirstPlayerDialogController($scope, dialog) {
-	//TODO populate opponent name
+function FirstPlayerDialogController($scope, dialog, currentMatch) {
+	$scope.currentMatch = currentMatch.get();
+
 	$scope.close = function(result) {
 		dialog.close(result);
 	};
