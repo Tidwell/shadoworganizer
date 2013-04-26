@@ -57,12 +57,14 @@ Service auto-reconnect
 
 Allow creating tournaments with prize-request email generation and alternate rules
 (hero lock, sideboard, etc)
+
 Audio and Title bar notifications
 
 
 ##Pipe dreams
 
 Sealed (3d support through the godstcg engine)
+
 Draft (3d support through the godstcg engine)
 
 
