@@ -108,7 +108,6 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 	};
 
 	$scope.drop = function() {
-		//send to server
 		$scope.currentTournament = currentTournament.drop();
 	};
 

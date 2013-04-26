@@ -26,6 +26,7 @@ Directives.directive('sideboard', function(sideboard) {
 });
 
 //for bootstrap tabs
+//todo switch whatever is using this to use angular-ui properly
 Directives.directive('showtab', function() {
     return {
         link: function(scope, element, attrs) {

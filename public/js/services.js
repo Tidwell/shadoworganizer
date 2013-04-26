@@ -2,7 +2,7 @@
 
 /* Services */
 
-var Services = angular.module('shadowOrganizer.services', [])
+var Services = angular.module('shadowOrganizer.services', []);
 
 Services.value('version', '0.1 (alpha)');
 
@@ -53,7 +53,7 @@ Services.factory('currentTournament', function($http, $rootScope) {
 
 				})
 				.error(function(data, status, headers, config) {
-					tournament.error = 'Error getting tournament list';
+					tournament.error = 'Error getting tournament';
 				});
 
 			return tournament;
@@ -61,6 +61,7 @@ Services.factory('currentTournament', function($http, $rootScope) {
 		drop: function(cb) {
 			tournament.active = false;
 			//send to server
+
 			if (cb) { cb(); }
 			return tournament;
 		}
@@ -134,7 +135,8 @@ Services.factory('user', function($http, $rootScope) {
 
 			return user;
 		}, register: function() {
-			//TODO
+			//send to server
+
 			return this.login();
 		}
 	};
