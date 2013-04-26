@@ -9,23 +9,35 @@ function TournamentsController($scope, $http, $location, tournaments, user, curr
 	$scope.tournaments = tournaments.get();
 	$scope.user = user.get();
 
-	//when we get new tournaments we want to check to see if the player is
-	//in the list of users and set a flag on the tournament if they are
-	$scope.$watch('tournaments.tournaments', function() {
+	//when we get new tournaments or if the user's in game name changes
+	//we want to check to see if the player is
+	//in the list of users and set a flag on the tournament if they are entered
+	$scope.$watch('tournaments.tournaments', updateTournaments);
+	$scope.$watch('user.inGameName', updateTournaments);
+
+	function updateTournaments() {
 		$scope.tournaments.tournaments.forEach(function(tournament) {
 			if (!tournament.started) {
 				tournament.users.forEach(function(user){
-					if (user.id === 'qwe') {
+					if (user.inGameName === $scope.user.inGameName) {
 						tournament.userEntered = true;
 					}
 				});
 			}
 		});
-	});
+	}
 
 	$scope.leaveTournament = function() {
-		//send to server
-
+		$scope.currentTournament = currentTournament.drop(function() {
+			var d = $dialog.dialog({
+				backdrop: true,
+				keyboard: true,
+				backdropClick: true,
+				templateUrl: 'partials/dropped-dialog',
+				controller: 'DroppedController'
+			});
+			d.open().then(function(result) {});
+		});
 	};
 
 	$scope.joinTournament = function(id) {

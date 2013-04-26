@@ -1,5 +1,14 @@
 #Shadow Organizer
 
+##TODO
+	FE
+		- reporting opponent
+		- chat
+		- service calls from other controllers
+
+	BE
+		everything...
+
 
  ##objective
 
