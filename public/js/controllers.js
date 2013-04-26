@@ -20,6 +20,16 @@ function TournamentsController($scope, $http, tournaments) {
 			}
 		});
 	});
+
+	$scope.leaveTournament = function() {
+		//send to server
+
+	};
+
+	$scope.joinTournament = function() {
+		//send to server
+
+	};
 }
 
 function CurrentTournamentController($scope, $dialog, currentTournament, currentMatch, currentGame) {
@@ -64,6 +74,15 @@ function CurrentTournamentController($scope, $dialog, currentTournament, current
 		$scope.currentGame.syncError = true;
 		//send to server
 
+	};
+
+	$scope.drop = function() {
+		//send to server
+
+	};
+
+	$scope.concede = function() {
+		//send to server
 	};
 
 	$scope.confirmFirstTurn = function() {

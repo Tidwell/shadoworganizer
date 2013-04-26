@@ -52,10 +52,10 @@
 
 				<td ng-show="!tournament.started">
 					<div ng-show="!tournament.userEntered">
-						Not Registered <button class="pull-right btn btn-small btn-success"><i class="icon-plus"></i> Join</button>
+						Not Registered <button ng-click="joinTournament()" class="pull-right btn btn-small btn-success"><i class="icon-plus"></i> Join</button>
 					</div>
 					<div ng-show="tournament.userEntered">
-						Registered <button class="pull-right btn btn-small btn-danger"><i class="icon-minus"></i> Leave</button>
+						Registered <button ng-click="leaveTournament()" class="pull-right btn btn-small btn-danger"><i class="icon-minus"></i> Leave</button>
 					</div>
 				</td>
 				<td ng-show="tournament.started">
