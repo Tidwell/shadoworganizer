@@ -21,6 +21,12 @@ angular.module('shadowOrganizer', [
 			templateUrl: 'partials/account',
 			controller: AccountController
 		});
+		$routeProvider.when('/forgot-password', {
+			templateUrl: 'partials/forgot-password',
+			controller: ForgotPasswordController
+		});
+
+
 		$routeProvider.when('/game', {
 			templateUrl: 'partials/game',
 			controller: GameController

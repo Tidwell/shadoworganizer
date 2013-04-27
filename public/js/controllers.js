@@ -9,9 +9,11 @@ function TournamentsController($scope, $http, $location, tournaments, user, curr
 	$scope.tournaments = tournaments.get();
 	$scope.user = user.get();
 
-	//when we get new tournaments or if the user's in game name changes
-	//we want to check to see if the player is
-	//in the list of users and set a flag on the tournament if they are entered
+	/*
+		when we get new tournaments or if the user's in game name changes
+		we want to check to see if the player is in the list of users and
+		set a flag on the tournament if they are entered
+	*/
 	$scope.$watch('tournaments.tournaments', updateTournaments);
 	$scope.$watch('user.inGameName', updateTournaments);
 
@@ -67,6 +69,12 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 	$scope.currentMatch = currentMatch.get();
 	$scope.currentGame = currentGame.get();
 	$scope.user = user.get();
+
+	$scope.$watch('user.authed', function(){
+		if (!$scope.user.authed) {
+			$location.path('/tournaments');
+		}
+	});
 
 	//when the game starts, we want to reset the ready tracking
 	//so the server doesn't have to tell us (maybe we do want the server to tell us???)
@@ -228,9 +236,11 @@ GameController.$inject = [];
 function AccountController($scope, $location, user) {
 	$scope.user = user.get();
 
-	if (!$scope.user.authed) {
-		$location.path('/tournaments');
-	}
+	$scope.$watch('user.authed', function(){
+		if (!$scope.user.authed) {
+			$location.path('/tournaments');
+		}
+	});
 
 	//copy over the email/ingame whenever it changes
 	$scope.$watch('user.email',function() {
@@ -257,25 +267,45 @@ function AccountController($scope, $location, user) {
 	};
 }
 
+function ForgotPasswordController($scope, $location, user) {
+	$scope.user = user.get();
+
+	$scope.$watch('user.authed', function(){
+		if ($scope.user.authed) {
+			$location.path('/account');
+		}
+	});
+
+	$scope.email = '';
+
+	$scope.resetPassword = function() {
+		$scope.user = user.forgotPassword($scope.email);
+	};
+}
+
 function NavCtrl($scope, $location, user, currentTournament) {
 	$scope.tournament = currentTournament.get();
 	$scope.user = user.get();
 
-	$scope.email = '';
+	$scope.username = '';
 	$scope.password = '';
 
 	$scope.login = function() {
 		$scope.user = user.login({
-			email: $scope.email,
+			username: $scope.username,
 			password: $scope.password
 		});
 	};
 
 	$scope.register = function() {
 		$scope.user = user.register({
-			email: $scope.email,
+			username: $scope.username,
 			password: $scope.password
 		});
+	};
+
+	$scope.logout = function() {
+		$scope.user = user.logout();
 	};
 
 	$scope.navClass = function (page) {

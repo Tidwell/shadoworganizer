@@ -4,6 +4,12 @@
 	FE
 		- reporting opponent
 		- chat
+		- finished/spectate view (allows chat in running tournaments?)
+		- general chat
+		- user profiles (account view without the settings)
+		- running tournament status on tournaments screen
+		- rating leaderboard
+
 		- service calls from other controllers
 		- socket.io integration (replace TODO in services and add pubsub)
 
@@ -61,6 +67,9 @@ Allow creating tournaments with prize-request email generation and alternate rul
 Audio and Title bar notifications
 
 Better responsiveness (Remove sign in from dropdown, item ordering, etc)
+
+faq / tutorial
+
 
 ##Pipe dreams
 

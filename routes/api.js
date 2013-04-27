@@ -110,7 +110,8 @@ exports.game = function(req,res) {
 
 exports.user = function(req,res) {
 	res.jsonp({
-		inGameName: 'Tidwell',
+		username: 'Tidwell',
+		inGameName: 'aTidwell',
 		email: 'aaron.tidwell@gmail.com',
 		authed: true,
 		games: {

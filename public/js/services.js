@@ -113,16 +113,18 @@ Services.factory('currentGame', function($http, $rootScope) {
 });
 
 Services.factory('user', function($http, $rootScope) {
-	var user = {
+	var userTemplate = {
 		error: false,
 		authed: false
 	};
+
+	var user = angular.copy(userTemplate);
 
 	return {
 		get: function() {
 			return user;
 		},
-		login: function(email,password) {
+		login: function(username,password) {
 			$http({method: 'GET', url: '/REST/user'})
 				.success(function(data, status, headers, config) {
 					for (var property in data) {
@@ -134,10 +136,22 @@ Services.factory('user', function($http, $rootScope) {
 				});
 
 			return user;
-		}, register: function() {
+		},
+		register: function() {
 			//send to server
 
 			return this.login();
+		},
+		forgotPassword: function(email) {
+			//send to server
+
+			return user;
+		},
+		logout: function() {
+			//send to server
+
+			user.authed = false;
+			return user;
 		}
 	};
 });
