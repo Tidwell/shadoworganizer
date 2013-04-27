@@ -3,10 +3,18 @@
  */
 
 var express = require('express');
+var cons = require('consolidate');
+
 var routes = require('./routes');
 var api = require('./routes/api');
-var cons = require('consolidate');
+var socket = require('./routes/socket');
+
 var app = module.exports = express();
+var server = require('http').createServer(app);
+
+// Hook Socket.io into Express
+var io = require('socket.io').listen(server);
+
 // Configuration
 app.configure(function() {
 	// assign the swig engine to .html files
@@ -38,7 +46,9 @@ app.get('/REST/user', api.user);
 // redirect all others to the index (HTML5 history)
 app.get('*', routes.index);
 
+io.sockets.on('connection', socket);
+
 // Start server
-app.listen(8081, function() {
+server.listen(8081, function() {
 	console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
 });

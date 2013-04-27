@@ -3,18 +3,44 @@
 ##TODO
 	FE
 		- reporting opponent
-		- chat
+		- chat (directives? chat-pane & chat-users? pub/sub to chatId set with directive, update model? can it use scope?)
+		- user popup
+			-username, in-game name, (rating), report button-dropdown (unsportsmanship, cheating, inactive)
+
 		- finished/spectate view (allows chat in running tournaments?)
 		- general chat
 		- user profiles (account view without the settings)
 		- running tournament status on tournaments screen
-		- rating leaderboard
+		- help/faq page
 
-		- service calls from other controllers
+
+		//- rating leaderboard
+
+
+	FE->BE
+		- all service calls from controllers
 		- socket.io integration (replace TODO in services and add pubsub)
 
 	BE
 		everything...
+
+		chat notifications (channels)
+			player readys
+			game / match result
+			user join / drop
+			end / winner
+			chat de-activates 10 mins after tournament end
+			tournament start
+
+		tournaments notifications
+
+		tournament notifications
+
+		match notifications
+
+		game notifications
+
+		user changes
 
 
  ##objective

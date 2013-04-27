@@ -43,7 +43,6 @@ function TournamentsController($scope, $http, $location, tournaments, user, curr
 	};
 
 	$scope.joinTournament = function(id) {
-		//send to server
 		$scope.currentTournament = currentTournament.join(id, function() {
 			if ($scope.currentTournament.active) {
 				var d = $dialog.dialog({
@@ -256,13 +255,13 @@ function AccountController($scope, $location, user) {
 
 	$scope.close = function(property) {
 		$scope[property+'Editing'] = false;
+		$scope[property+'Edited'] = $scope.user[property];
 	};
 
 	$scope.save = function(property) {
 		//we use the convention that the inputs have an ng-model of propertyEdited (eg. emailEdited)
 		$scope.user[property] = $scope[property+'Edited'];
-		//send to server
-
+		user.update();
 		$scope.close(property);
 	};
 }
@@ -283,12 +282,27 @@ function ForgotPasswordController($scope, $location, user) {
 	};
 }
 
-function NavCtrl($scope, $location, user, currentTournament) {
+function NavCtrl($scope, $location, user, currentTournament, socket) {
 	$scope.tournament = currentTournament.get();
 	$scope.user = user.get();
 
 	$scope.username = '';
 	$scope.password = '';
+
+	socket.on('user:login', clearForm);
+	socket.on('user:register', clearForm);
+	socket.on('user:updated', function() {
+		$scope.userUpdated = true;
+	});
+
+	$scope.clearUpdated = function() {
+		$scope.userUpdated = false;
+	};
+
+	function clearForm() {
+		$scope.username = '';
+		$scope.password = '';
+	}
 
 	$scope.login = function() {
 		$scope.user = user.login({

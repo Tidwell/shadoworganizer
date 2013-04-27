@@ -24,6 +24,11 @@ i.shadow-crystals {
 	background-repeat: no-repeat;
 }
 
+.nav-error, .nav-success {
+	position: fixed;
+	top: 50px;
+	right: 0;
+}
 
 /* Based on http://www.jimyi.com/content/brackets/bracket.css */
 .tournament4-wrap, .tournament8-wrap, .tournament16-wrap, .tournament32-wrap {

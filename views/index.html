@@ -10,7 +10,9 @@
 	<link href="/bootstrap/css/bootstrap.css" rel="stylesheet">
 	<link rel="stylesheet" href="/css/font-awesome.css">
 	<link href="/css/styles.css" rel="stylesheet">
-	<link href="/bootstrap/css/bootstrap-responsive.css" rel="stylesheet"></head>
+	<link href="/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+	<script src="/socket.io/socket.io.js"></script>
+</head>
 
 <body data-spy="scroll" data-target=".bs-docs-sidebar">
 	<div class="navbar navbar-inverse navbar-fixed-top">
@@ -40,10 +42,13 @@
 						<a href="/account">Account</a>
 					</li>
 					<li ng-show="user.authed">
-						<a ng-click="logout()"><i class="icon-signout"></i>Logout</a>
+						<a ng-click="logout()"> <i class="icon-signout"></i>
+							Logout
+						</a>
 					</li>
 					<li class="dropdown">
-						<a class="dropdown-toggle"><i class="icon-question-sign"></i></a>
+						<a class="dropdown-toggle"> <i class="icon-question-sign"></i>
+						</a>
 						<ul class="dropdown-menu">
 							<li>
 								<a href="/forgot-password" ng-show="!user.authed">Forgot Password</a>
@@ -52,6 +57,13 @@
 						</ul>
 					</li>
 				</ul>
+				<div class="alert alert-error nav-error" ng-show="user.error">
+					<strong>{{user.error}}</strong>
+				</div>
+				<div class="alert alert-success nav-success" ng-show="userUpdated">
+					<a class="close" href="#" ng-click="clearUpdated()">&times;</a>
+					<strong>User Update Successful.</strong>
+				</div>
 				<form class="navbar-form pull-right" ng-show="!user.authed">
 					<input class="span2" type="text" placeholder="Username" ng-model="username">
 					<input class="span2" type="password" placeholder="Password" ng-model="password">
