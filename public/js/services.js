@@ -12,29 +12,20 @@ Services.value('decklock', 'Your hero and deck may not be changed between rounds
 Services.value('sideboard', 'Your deck may be changed between games by making 1:1 substitutions from your 15-card sideboard.');
 
 Services.factory('tournaments', function($http, $rootScope, socket) {
+	var tournaments = {
+		tournaments: [],
+		errror: false
+	};
 
-	// socket.on('send:test',function(data) {
-	// 	console.log(data);
-	// });
+	socket.on('tournaments:update', function(newTournaments) {
+		tournaments.tournaments = newTournaments.tournaments;
+	});
 
 	return {
 		get: function() {
-			var tournaments = {
-				tournaments: [],
-				errror: false
-			};
-			// Asynchronous call that executes a callback. Simulation of ajax/db request
-			$http({
-				method: 'GET',
-				url: '/REST/tournaments'
-			})
-				.success(function(data, status, headers, config) {
-				tournaments.tournaments = data;
-			})
-				.error(function(data, status, headers, config) {
-				tournaments.error = 'Error getting tournament list';
+			socket.emit('tournaments:list', function(activeTournaments) {
+				tournaments.tournaments = activeTournaments;
 			});
-
 			return tournaments;
 		}
 	};

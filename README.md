@@ -22,7 +22,13 @@
 		- socket.io integration (replace TODO in services and add pubsub)
 
 	BE
-		everything...
+		tournaments notifications
+
+		tournament notifications
+
+		match notifications
+
+		game notifications
 
 		chat notifications (channels)
 			player readys
@@ -32,15 +38,6 @@
 			chat de-activates 10 mins after tournament end
 			tournament start
 
-		tournaments notifications
-
-		tournament notifications
-
-		match notifications
-
-		game notifications
-
-		user changes
 
 
  ##objective

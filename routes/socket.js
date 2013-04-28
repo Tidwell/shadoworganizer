@@ -8,6 +8,7 @@ var Schema = mongoose.Schema;
 var ObjectId = Schema.Types.ObjectId;
 
 var loggedInUsers = [];
+var currentTournaments = [];
 
 var UserModel = new Schema({
 	username: String,
@@ -31,7 +32,41 @@ var UserModel = new Schema({
 	earnings: Number
 });
 
+var TournamentModel = new Schema({
+	name: String,
+	started: Boolean,
+	ended: Boolean,
+	round: Number,
+	rules: [String],
+	payout: {
+		1: Number,
+		2: Number
+	},
+	startTime: Date,
+	players: Number,
+	users: [
+		{
+			id: ObjectId
+		}
+	],
+	bracket: {
+		round1: {
+			game1: [String],
+			game2: [String],
+			game3: [String],
+			game4: [String]
+		},
+		round2: {
+			game1: [String],
+			game2: [String]
+		},
+		round3: [String]
+	},
+	winner: String
+});
+
 var User = mongoose.model('User', UserModel);
+var Tournament = mongoose.model('Tournament', TournamentModel);
 
 //maybe this should just listen for events and route to the api with a .jsonp mock?
 module.exports = function(socket) {
@@ -141,4 +176,39 @@ module.exports = function(socket) {
 			success(userData[0]);
 		});
 	}
+
+
+	//on load populate unstarted tournaments from the DB
+	Tournament.find({started: false}, function(err,tournaments){
+		if (tournaments.length) {
+			currentTournaments = tournaments;
+		}
+		//if we cant find any, create a new tournament
+		if (!currentTournaments.length) {
+			var t = new Tournament({
+				name: 'Auto Generated 8-Man',
+				started: false,
+				ended: false,
+				round: 0,
+				rules: ['Deck Lock'],
+				payout: {
+					1: 0,
+					2: 0
+				},
+				startTime: new Date(),
+				players: 0,
+				users: []
+			});
+
+			t.save(function(err,tournament){
+				currentTournaments.push(t);
+				socket.emit('tournaments:update', currentTournaments);
+			});
+		}
+	});
+
+	//tournaments list
+	socket.on('tournaments:list', function(){
+		socket.emit('tournaments:update', { tournaments: currentTournaments });
+	});
 };
