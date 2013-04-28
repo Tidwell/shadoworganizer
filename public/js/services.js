@@ -11,55 +11,110 @@ Services.value('herolock', 'Your hero may not be changed. Your deck may be chang
 Services.value('decklock', 'Your hero and deck may not be changed between rounds/games');
 Services.value('sideboard', 'Your deck may be changed between games by making 1:1 substitutions from your 15-card sideboard.');
 
-Services.factory('tournaments', function($http, $rootScope, socket) {
+Services.factory('tournaments', function($http, $rootScope, socket, user) {
+	var userObj = user.get();
 	var tournaments = {
 		tournaments: [],
 		errror: false
 	};
 
-	socket.on('tournaments:update', function(newTournaments) {
-		tournaments.tournaments = newTournaments.tournaments;
+	/*
+		when we get new tournaments or if the user's in game name changes
+		we want to check to see if the player is in the list of users and
+		set a flag on the tournament if they are entered
+	*/
+	socket.on('user:login', updateFlags);
+	socket.on('user:registered', updateFlags);
+	socket.on('user:updated', updateFlags);
+	socket.on('user:logged-out', updateFlags);
+
+	socket.on('tournaments:update', function(data) {
+		tournaments.tournaments = data.tournaments;
+		updateFlags();
 	});
+
+	//when we get an upate to a tournament, copy over the changes
+	socket.on('tournament:update', function(data){
+		var updatedTournament = data.tournament;
+		tournaments.tournaments.forEach(function(tournament){
+			if (tournament.id === updatedTournament.id) {
+				for (var property in updatedTournament) {
+					tournament[property] = updatedTournament[property];
+				}
+			}
+			updateFlags();
+		});
+	});
+
+
+	function updateFlags() {
+		tournaments.tournaments.forEach(function(tournament,i) {
+			tournament.users.forEach(function(user){
+				if (user.username === userObj.username) {
+					tournaments.tournaments[i].userEntered = true;
+				} else {
+					tournaments.tournaments[i].userEntered = false;
+				}
+			});
+		});
+	}
 
 	return {
 		get: function() {
-			socket.emit('tournaments:list', function(activeTournaments) {
-				tournaments.tournaments = activeTournaments;
-			});
+			socket.emit('tournaments:list');
 			return tournaments;
 		}
 	};
 });
 
-Services.factory('currentTournament', function($http, $rootScope) {
+Services.factory('currentTournament', function($http, $rootScope, socket, user, tournaments) {
 	var tournament = {
 		active: false,
 		error: null
 	};
+	var u = user.get();
+	tournaments = tournaments.get();
+
+	//when the tournaments list is updated, we want to see if we are in any of the tournaments
+	socket.on('user:login', checkForActive);
+	socket.on('user:registered', checkForActive);
+	socket.on('user:updated', checkForActive);
+	socket.on('user:update', checkForActive);
+	socket.on('user:logout', checkForActive);
+
+	function checkForActive() {
+		tournaments.tournaments.forEach(function(t) {
+			t.users.forEach(function(user){
+				if (u.username === user.username) {
+					for (var property in t) {
+						tournament[property] = t[property];
+					}
+				}
+			});
+		});
+	}
+
+	//when we get an upate to a tournament, check if the id matches and copy over the changes
+	socket.on('tournament:update', function(data){
+		var updatedTournament = data.tournament;
+		if (tournament.id === updatedTournament.id) {
+			for (var property in updatedTournament) {
+				tournament[property] = updatedTournament[property];
+			}
+		}
+	});
+
 	return {
 		get: function() {
 			return tournament;
 		},
-		join: function(id, cb) {
-			$http({
-				method: 'GET',
-				url: '/REST/tournament'
-			})
-				.success(function(data, status, headers, config) {
-				for (var property in data) {
-					tournament[property] = data[property];
-					tournament.active = true;
-				}
-				//todo switch this to be deferred
-				if (cb) {
-					cb();
-				}
-
-			})
-				.error(function(data, status, headers, config) {
-				tournament.error = 'Error getting tournament';
-			});
-
+		join: function(id) {
+			var data = {
+				tournamentId: id,
+				username: u.username,
+				password: user.getPassword()
+			};
+			socket.emit('tournament:join', data);
 			return tournament;
 		},
 		drop: function(cb) {
@@ -191,6 +246,9 @@ Services.factory('user', function($http, $rootScope, socket) {
 			if (user.password) {
 				userPassword = user.password;
 			}
+		},
+		getPassword: function() {
+			return userPassword;
 		}
 	};
 });

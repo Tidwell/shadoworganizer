@@ -49,10 +49,9 @@
 					</div>
 				</td>
 
-
 				<td ng-show="!tournament.started">
 					<div ng-show="!tournament.userEntered">
-						Not Registered <button ng-click="joinTournament(tournament.id)" class="pull-right btn btn-small btn-success" ng-show="user.authed && !currentTournament.active"><i class="icon-plus"></i> Join</button>
+						Not Registered <button ng-click="joinTournament(tournament._id)" class="pull-right btn btn-small btn-success" ng-show="user.authed && !currentTournament.active"><i class="icon-plus"></i> Join</button>
 					</div>
 					<div ng-show="tournament.userEntered && user.authed">
 						Registered <button ng-click="leaveTournament()" class="pull-right btn btn-small btn-danger"><i class="icon-minus"></i> Leave</button>

@@ -34,6 +34,7 @@ var UserModel = new Schema({
 
 var TournamentModel = new Schema({
 	name: String,
+	active: Boolean,
 	started: Boolean,
 	ended: Boolean,
 	round: Number,
@@ -44,11 +45,7 @@ var TournamentModel = new Schema({
 	},
 	startTime: Date,
 	players: Number,
-	users: [
-		{
-			id: ObjectId
-		}
-	],
+	users: [{id: ObjectId, inGameName: String, username: String}],
 	bracket: {
 		round1: {
 			game1: [String],
@@ -148,6 +145,7 @@ module.exports = function(socket) {
 			loggedInUsers.forEach(function(user,index){
 				if (user.username === userData.username) {
 					loggedInUsers.splice(index,1);
+					socket.emit('user:logged-out', {});
 				}
 			});
 		});
@@ -187,6 +185,7 @@ module.exports = function(socket) {
 		if (!currentTournaments.length) {
 			var t = new Tournament({
 				name: 'Auto Generated 8-Man',
+				active: true,
 				started: false,
 				ended: false,
 				round: 0,
@@ -201,8 +200,8 @@ module.exports = function(socket) {
 			});
 
 			t.save(function(err,tournament){
-				currentTournaments.push(t);
-				socket.emit('tournaments:update', currentTournaments);
+				currentTournaments.push(tournament);
+				socket.emit('tournaments:update', { tournaments: currentTournaments });
 			});
 		}
 	});
@@ -211,4 +210,48 @@ module.exports = function(socket) {
 	socket.on('tournaments:list', function(){
 		socket.emit('tournaments:update', { tournaments: currentTournaments });
 	});
+
+	//tournament join
+	socket.on('tournament:join', function(data) {
+		auth(data,function(userObj){
+			Tournament.find({_id: data.tournamentId}, function(err,tournaments) {
+				var tournament = tournaments[0];
+				if (tournament.players < 8) {
+					//add to tournament
+					tournament.players++;
+					tournament.users.push({
+						id: userObj.id,
+						inGameName: userObj.inGameName,
+						username: userObj.username
+					});
+					//save to the db
+					tournament.save(function(err,tournamentObj) {
+						if (err) {
+							socket.emit('tournament:error', 'Error joining tournament.');
+						}
+						//check and see if it is stored in cache and update it if it is
+						currentTournaments.forEach(function(t,i){
+							if (t.id === tournamentObj.id) {
+								currentTournaments[i] = tournamentObj;
+							}
+						});
+						//notify everyone
+						socket.emit('tournament:update', {tournament: tournamentObj});
+					});
+				} else {
+					socket.emit('tournament:error', 'Tournament is Full.');
+				}
+			});
+		});
+	});
+
+	function getTournament(id, cb) {
+		Tournaments.find({id: id}, function(err,activeTournament){
+			activeTournaments.forEach(function(tournament) {
+				if (id === tournament.id) {
+					cb(tournament);
+				}
+			});
+		});
+	}
 };

@@ -9,26 +9,6 @@ function TournamentsController($scope, $http, $location, tournaments, user, curr
 	$scope.tournaments = tournaments.get();
 	$scope.user = user.get();
 
-	/*
-		when we get new tournaments or if the user's in game name changes
-		we want to check to see if the player is in the list of users and
-		set a flag on the tournament if they are entered
-	*/
-	$scope.$watch('tournaments.tournaments', updateTournaments);
-	$scope.$watch('user.inGameName', updateTournaments);
-
-	function updateTournaments() {
-		$scope.tournaments.tournaments.forEach(function(tournament) {
-			if (!tournament.started) {
-				tournament.users.forEach(function(user){
-					if (user.inGameName === $scope.user.inGameName) {
-						tournament.userEntered = true;
-					}
-				});
-			}
-		});
-	}
-
 	$scope.leaveTournament = function() {
 		$scope.currentTournament = currentTournament.drop(function() {
 			var d = $dialog.dialog({
@@ -43,23 +23,25 @@ function TournamentsController($scope, $http, $location, tournaments, user, curr
 	};
 
 	$scope.joinTournament = function(id) {
-		$scope.currentTournament = currentTournament.join(id, function() {
-			if ($scope.currentTournament.active) {
-				var d = $dialog.dialog({
-					backdrop: true,
-					keyboard: true,
-					backdropClick: true,
-					templateUrl: 'partials/join-tournament-dialog',
-					controller: 'JoinTournamentDialogController'
-				});
-				d.open().then(function(result) {
-					if (result) {
-						$location.path('current-tournament');
-					}
-				});
-			}
-		});
+		$scope.currentTournament = currentTournament.join(id);
 	};
+
+	$scope.$watch('currentTournament.active', function(){
+		if ($scope.currentTournament.active) {
+			var d = $dialog.dialog({
+				backdrop: true,
+				keyboard: true,
+				backdropClick: true,
+				templateUrl: 'partials/join-tournament-dialog',
+				controller: 'JoinTournamentDialogController'
+			});
+			d.open().then(function(result) {
+				if (result) {
+					$location.path('current-tournament');
+				}
+			});
+		}
+	});
 
 }
 
