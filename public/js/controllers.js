@@ -5,29 +5,20 @@
 //LIST EVENTS THAT CAN BE RECIEVED
 
 function TournamentsController($scope, $http, $location, tournaments, user, currentTournament, $dialog) {
-	$scope.currentTournament = currentTournament.get();
+	$scope.tournament = currentTournament.get();
 	$scope.tournaments = tournaments.get();
 	$scope.user = user.get();
 
-	$scope.leaveTournament = function() {
-		$scope.currentTournament = currentTournament.drop(function() {
-			var d = $dialog.dialog({
-				backdrop: true,
-				keyboard: true,
-				backdropClick: true,
-				templateUrl: 'partials/dropped-dialog',
-				controller: 'DroppedController'
-			});
-			d.open().then(function(result) {});
-		});
+	$scope.leaveTournament = function(id) {
+		$scope.tournament = currentTournament.drop(id);
 	};
 
 	$scope.joinTournament = function(id) {
-		$scope.currentTournament = currentTournament.join(id);
+		$scope.tournament = currentTournament.join(id);
 	};
 
-	$scope.$watch('currentTournament.active', function(){
-		if ($scope.currentTournament.active) {
+	$scope.$watch('tournament.joined', function(){
+		if ($scope.tournament.active && $scope.tournament.joined) {
 			var d = $dialog.dialog({
 				backdrop: true,
 				keyboard: true,
@@ -39,6 +30,24 @@ function TournamentsController($scope, $http, $location, tournaments, user, curr
 				if (result) {
 					$location.path('current-tournament');
 				}
+				$scope.tournament.joined = false;
+			});
+		}
+	});
+
+	//when they drop, notify them
+	$scope.$watch('tournament.dropped', function() {
+		if (!$scope.tournament.active && $scope.tournament.dropped) {
+			var d = $dialog.dialog({
+				backdrop: true,
+				keyboard: true,
+				backdropClick: true,
+				templateUrl: 'partials/dropped-dialog',
+				controller: 'DroppedController'
+			});
+			d.open().then(function(result) {
+				//set the flag to note
+				$scope.tournament.dropped = false;
 			});
 		}
 	});
@@ -96,10 +105,6 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 
 	};
 
-	$scope.drop = function() {
-		$scope.currentTournament = currentTournament.drop();
-	};
-
 	$scope.concede = function() {
 		//send to server
 	};
@@ -133,18 +138,8 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 		});
 		d.open().then(function(result) {
 			if (result) {
-				currentTournament.drop(function() {
-					var d = $dialog.dialog({
-						backdrop: true,
-						keyboard: true,
-						backdropClick: true,
-						templateUrl: 'partials/dropped-dialog',
-						controller: 'DroppedController'
-					});
-					d.open().then(function(result) {
-						$location.path('/tournaments');
-					});
-				});
+				$location.path('/tournaments');
+				currentTournament.drop($scope.tournament.tournament._id);
 			}
 		});
 	};

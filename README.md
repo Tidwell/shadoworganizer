@@ -22,8 +22,6 @@
 		- socket.io integration (replace TODO in services and add pubsub)
 
 	BE
-		tournaments notifications
-
 		tournament notifications
 
 		match notifications

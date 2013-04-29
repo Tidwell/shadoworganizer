@@ -66,7 +66,7 @@ var User = mongoose.model('User', UserModel);
 var Tournament = mongoose.model('Tournament', TournamentModel);
 
 //maybe this should just listen for events and route to the api with a .jsonp mock?
-module.exports = function(socket) {
+module.exports = function(socket, io) {
 
 	//registration
 	socket.on('user:register', function(userData) {
@@ -201,7 +201,7 @@ module.exports = function(socket) {
 
 			t.save(function(err,tournament){
 				currentTournaments.push(tournament);
-				socket.emit('tournaments:update', { tournaments: currentTournaments });
+				io.sockets.emit('tournaments:update', { tournaments: currentTournaments });
 			});
 		}
 	});
@@ -236,7 +236,8 @@ module.exports = function(socket) {
 							}
 						});
 						//notify everyone
-						socket.emit('tournament:update', {tournament: tournamentObj});
+						io.sockets.emit('tournament:update', {tournament: tournamentObj});
+						socket.emit('tournament:joined', {tournament: tournamentObj});
 					});
 				} else {
 					socket.emit('tournament:error', 'Tournament is Full.');
@@ -245,13 +246,33 @@ module.exports = function(socket) {
 		});
 	});
 
-	function getTournament(id, cb) {
-		Tournaments.find({id: id}, function(err,activeTournament){
-			activeTournaments.forEach(function(tournament) {
-				if (id === tournament.id) {
-					cb(tournament);
+	socket.on('tournament:drop', function(data) {
+		auth(data, function(userObj){
+			Tournament.find({_id: data.id}, function(err,tournaments){
+				if (!tournaments.length || err) {
+					socket.emit('tournament:error', {error: 'Faild to find tournament.'});
+					return;
 				}
+				var tournamentObj = tournaments[0];
+				//remove the player
+				tournamentObj.players--;
+				tournamentObj.users.forEach(function(player, i) {
+					if (player.username === userObj.username) {
+						tournamentObj.users.splice(i,1);
+						tournamentObj.save(function(err,tournamentObj) {
+							//check and see if it is stored in cache and update it if it is
+							currentTournaments.forEach(function(t,i){
+								if (t.id === tournamentObj.id) {
+									currentTournaments[i] = tournamentObj;
+								}
+							});
+							//notify everyone
+							io.sockets.emit('tournament:update', {tournament: tournamentObj});
+							socket.emit('tournament:dropped', {tournament: tournamentObj});
+						});
+					}
+				});
 			});
 		});
-	}
+	});
 };

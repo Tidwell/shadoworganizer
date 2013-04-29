@@ -46,7 +46,7 @@ app.get('/REST/user', api.user);
 // redirect all others to the index (HTML5 history)
 app.get('*', routes.index);
 
-io.sockets.on('connection', socket);
+io.sockets.on('connection', function(s) {socket(s,io)});
 
 // Start server
 server.listen(8081, function() {
