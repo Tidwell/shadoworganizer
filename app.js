@@ -37,11 +37,8 @@ app.get('/', routes.index);
 app.get('/partials/:name', routes.partials);
 
 // JSON API
-app.get('/REST/tournaments', api.tournaments);
-app.get('/REST/tournament', api.tournament);
 app.get('/REST/match', api.match);
 app.get('/REST/game', api.game);
-app.get('/REST/user', api.user);
 
 // redirect all others to the index (HTML5 history)
 app.get('*', routes.index);

@@ -31,7 +31,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr ng-repeat="t in tournaments.tournaments" ng-class="{success: tournament.active && tournament.tournament.id == t.id}">
+			<tr ng-repeat="t in tournaments.tournaments" ng-class="{success: tournament.active && tournament.tournament._id == t._id}">
 				<td>{{t.name}}</td>
 				<td>{{t.rules | implode}}</td>
 				<td>
@@ -52,7 +52,7 @@
 					<div ng-show="!tournament.active">
 						Not Registered <button ng-click="joinTournament(t._id)" class="pull-right btn btn-small btn-success" ng-show="user.authed && !tournament.active"><i class="icon-plus"></i> Join</button>
 					</div>
-					<div ng-show="tournament.active && tournament.tournament._id && t._id == tournament.tournament._id && user.authed">
+					<div ng-show="tournament.active && tournament.tournament._id && t._id == tournament.tournament._id && user.authed && !t.started">
 
 						Registered <button ng-click="leaveTournament(t._id)" class="pull-right btn btn-small btn-danger"><i class="icon-minus"></i> Leave</button>
 					</div>

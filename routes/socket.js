@@ -177,33 +177,39 @@ module.exports = function(socket, io) {
 
 
 	//on load populate unstarted tournaments from the DB
-	Tournament.find({started: false}, function(err,tournaments){
+	Tournament.find({active: true}, function(err,tournaments){
 		if (tournaments.length) {
 			currentTournaments = tournaments;
 		}
+		var createNew = true;
+		currentTournaments.forEach(function(t){
+			if (t.started === false) {
+				createNew = false;
+			}
+		});
 		//if we cant find any, create a new tournament
-		if (!currentTournaments.length) {
-			var t = new Tournament({
-				name: 'Auto Generated 8-Man',
-				active: true,
-				started: false,
-				ended: false,
-				round: 0,
-				rules: ['Deck Lock'],
-				payout: {
-					1: 0,
-					2: 0
-				},
-				startTime: new Date(),
-				players: 0,
-				users: []
-			});
+		if (!createNew) { return; }
 
-			t.save(function(err,tournament){
-				currentTournaments.push(tournament);
-				io.sockets.emit('tournaments:update', { tournaments: currentTournaments });
-			});
-		}
+		var t = new Tournament({
+			name: 'Auto Generated 8-Man',
+			active: true,
+			started: false,
+			ended: false,
+			round: 0,
+			rules: ['Deck Lock'],
+			payout: {
+				1: 0,
+				2: 0
+			},
+			startTime: new Date(),
+			players: 0,
+			users: []
+		});
+
+		t.save(function(err,tournament){
+			currentTournaments.push(tournament);
+			io.sockets.emit('tournaments:update', { tournaments: currentTournaments });
+		});
 	});
 
 	//tournaments list
@@ -220,10 +226,16 @@ module.exports = function(socket, io) {
 					//add to tournament
 					tournament.players++;
 					tournament.users.push({
-						id: userObj.id,
 						inGameName: userObj.inGameName,
 						username: userObj.username
 					});
+
+					if (tournament.players === 8) {
+						tournament.started = true;
+						tournament.startTime = new Date();
+						tournament.round = 1;
+					}
+
 					//save to the db
 					tournament.save(function(err,tournamentObj) {
 						if (err) {
