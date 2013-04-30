@@ -1,7 +1,15 @@
-function TournamentsController($scope, $http, $location, tournaments, user, currentTournament, $dialog) {
+function TournamentsController($scope, $http, $location, tournaments, user, currentTournament, $dialog, socket) {
 	$scope.tournament = currentTournament.get();
 	$scope.tournaments = tournaments.get();
 	$scope.user = user.get();
+
+	//todo remove socket dependancy
+	$scope.totalUsers = { count: 0 };
+	socket.on('users:count', function(data) {
+		$scope.totalUsers.count = data.count;
+	});
+	//get the count on load
+	socket.emit('users:count');
 
 	$scope.leaveTournament = function(id) {
 		$scope.tournament = currentTournament.drop(id);

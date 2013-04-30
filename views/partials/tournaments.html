@@ -14,6 +14,7 @@
 		</p>
 		<p>
 			<a href="/register" class="btn btn-primary btn-large" ng-show="!user.authed">Compete for Free! &raquo;</a>
+			<div ng-show="user.authed">Currently {{totalUsers.count}} users signed in.</div>
 		</p>
 	</div>
 

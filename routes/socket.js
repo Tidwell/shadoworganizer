@@ -146,6 +146,7 @@ module.exports = function(socket, io) {
 				if (user.username === userData.username) {
 					loggedInUsers.splice(index,1);
 					socket.emit('user:logged-out', {});
+					sendCount();
 				}
 			});
 		});
@@ -157,10 +158,21 @@ module.exports = function(socket, io) {
 		//send email with new password
 	});
 
+	socket.on('users:count',sendCount);
+
+	function sendCount(all) {
+		if (!all) {
+			socket.emit('users:count', {count: loggedInUsers.length});
+			return;
+		}
+		io.sockets.emit('users:count', {count: loggedInUsers.length});
+	}
+
 	function sendLogin(data){
 		loggedInUsers.push(data);
 		delete data.password;
 		socket.emit('user:login', data);
+		sendCount();
 	}
 
 	function auth(data, success) {

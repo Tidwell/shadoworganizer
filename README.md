@@ -20,6 +20,8 @@
 	FE->BE
 		- all service calls from controllers
 		- adujust match and game services to match tournament
+		- users service
+		- disconnect handler
 		- socket.io integration (replace TODO in services and add pubsub)
 
 	BE
