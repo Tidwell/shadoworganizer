@@ -20,6 +20,51 @@ var condensedUser = uM.condensedUser;
 var User = mongoose.model('User', UserModel);
 var Tournament = mongoose.model('Tournament', TournamentModel);
 
+function loadFromDB(cb) {
+	Tournament.find({active: true}, function(err,tournaments){
+		if (tournaments.length) {
+			currentTournaments = tournaments;
+		}
+		checkCreate();
+	});
+}
+
+function checkCreate(io) {
+	//on load populate unstarted tournaments from the DB
+	var createNew = true;
+	currentTournaments.forEach(function(t){
+		if (t.started === false) {
+			createNew = false;
+		}
+	});
+	//if we cant find any, create a new tournament
+	if (!createNew) { return; }
+
+	var t = new Tournament({
+		name: 'Auto Generated 8-Man',
+		active: true,
+		started: false,
+		ended: false,
+		round: 0,
+		rules: ['Deck Lock'],
+		payout: {
+			1: 0,
+			2: 0
+		},
+		startTime: new Date(),
+		players: 0,
+		users: []
+	});
+
+	t.save(function(err,tournament){
+		currentTournaments.push(tournament);
+		if (io) { io.sockets.emit('tournaments:update', { tournaments: currentTournaments }); }
+	});
+}
+
+loadFromDB();
+
+
 //maybe this should just listen for events and route to the api with a .jsonp mock?
 module.exports = function(socket, io) {
 	socket.on('user:register', register);
@@ -179,7 +224,7 @@ module.exports = function(socket, io) {
 					io.sockets.emit('tournament:update', {tournament: tournamentObj});
 					socket.emit('tournament:joined', {tournament: tournamentObj});
 
-					checkCreate();
+					checkCreate(io);
 				});
 			} else {
 				socket.emit('tournament:error', 'Tournament is Full.');
@@ -222,50 +267,6 @@ module.exports = function(socket, io) {
 			error: 'Error authenticating, please login again.'
 		});
 	}
-
-	function loadFromDB(cb) {
-		Tournament.find({active: true}, function(err,tournaments){
-			if (tournaments.length) {
-				currentTournaments = tournaments;
-			}
-			checkCreate();
-		});
-	}
-
-	function checkCreate() {
-		//on load populate unstarted tournaments from the DB
-		var createNew = true;
-		currentTournaments.forEach(function(t){
-			if (t.started === false) {
-				createNew = false;
-			}
-		});
-		//if we cant find any, create a new tournament
-		if (!createNew) { return; }
-
-		var t = new Tournament({
-			name: 'Auto Generated 8-Man',
-			active: true,
-			started: false,
-			ended: false,
-			round: 0,
-			rules: ['Deck Lock'],
-			payout: {
-				1: 0,
-				2: 0
-			},
-			startTime: new Date(),
-			players: 0,
-			users: []
-		});
-
-		t.save(function(err,tournament){
-			currentTournaments.push(tournament);
-			io.sockets.emit('tournaments:update', { tournaments: currentTournaments });
-		});
-	}
-
-	loadFromDB();
 
 	//+ Jonas Raoni Soares Silva
 	//@ http://jsfromhell.com/array/shuffle [v1.0]
