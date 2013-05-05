@@ -1,6 +1,8 @@
 /*
  * Serve content over a socket
  */
+var tournamentPlayers = 8;
+
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/shadoworganizer');
 
@@ -32,6 +34,12 @@ var UserModel = new Schema({
 	earnings: Number
 });
 
+var condensedUser = {
+	username: String,
+	inGameName: String,
+	id: ObjectId
+};
+
 var TournamentModel = new Schema({
 	name: String,
 	active: Boolean,
@@ -45,21 +53,21 @@ var TournamentModel = new Schema({
 	},
 	startTime: Date,
 	players: Number,
-	users: [{id: ObjectId, inGameName: String, username: String}],
+	users: [condensedUser],
 	bracket: {
 		round1: {
-			game1: [String],
-			game2: [String],
-			game3: [String],
-			game4: [String]
+			game1: [condensedUser],
+			game2: [condensedUser],
+			game3: [condensedUser],
+			game4: [condensedUser]
 		},
 		round2: {
-			game1: [String],
-			game2: [String]
+			game1: [condensedUser],
+			game2: [condensedUser]
 		},
-		round3: [String]
+		round3: [condensedUser]
 	},
-	winner: String
+	winner: condensedUser
 });
 
 var User = mongoose.model('User', UserModel);
@@ -140,7 +148,17 @@ module.exports = function(socket, io) {
 	});
 
 	//logout
-	socket.on('user:logout', function(userData){
+	socket.on('user:logout', logout);
+
+	socket.on('user:forgot-password', function(email){
+		//reset password to random
+
+		//send email with new password
+	});
+
+	socket.on('users:count',sendCount);
+
+	function logout(userData) {
 		auth(userData, function(data){
 			loggedInUsers.forEach(function(user,index){
 				if (user.username === userData.username) {
@@ -150,15 +168,7 @@ module.exports = function(socket, io) {
 				}
 			});
 		});
-	});
-
-	socket.on('user:forgot-password', function(email){
-		//reset password to random
-
-		//send email with new password
-	});
-
-	socket.on('users:count',sendCount);
+	}
 
 	function sendCount(all) {
 		if (!all) {
@@ -170,29 +180,49 @@ module.exports = function(socket, io) {
 
 	function sendLogin(data){
 		loggedInUsers.push(data);
+		socket.user = data;
 		delete data.password;
 		socket.emit('user:login', data);
 		sendCount();
 	}
 
 	function auth(data, success) {
+		//if we already have their user obj on the scoket
+		if (socket.user) {
+			success(socket.user);
+		}
+		//otherwise make sure they passed params
+		if (!data || typeof data.username !== 'string' || typeof data.password !== 'string' ) {
+			error();
+			return;
+		}
+		//check the db
 		User.find({ username: data.username, password: data.password }, function(err,userData){
 			if (!userData.length) {
-				socket.emit('user:error', {
-					error: 'Error authenticating, please login again.'
-				});
+				error();
 				return;
 			}
 			success(userData[0]);
 		});
+
+		function error() {
+			socket.emit('user:error', {
+				error: 'Error authenticating, please login again.'
+			});
+		}
 	}
 
+	function loadFromDB(cb) {
+		Tournament.find({active: true}, function(err,tournaments){
+			if (tournaments.length) {
+				currentTournaments = tournaments;
+				if (cb) { cb(); }
+			}
+		});
+	}
 
-	//on load populate unstarted tournaments from the DB
-	Tournament.find({active: true}, function(err,tournaments){
-		if (tournaments.length) {
-			currentTournaments = tournaments;
-		}
+	function checkCreate() {
+		//on load populate unstarted tournaments from the DB
 		var createNew = true;
 		currentTournaments.forEach(function(t){
 			if (t.started === false) {
@@ -222,19 +252,50 @@ module.exports = function(socket, io) {
 			currentTournaments.push(tournament);
 			io.sockets.emit('tournaments:update', { tournaments: currentTournaments });
 		});
-	});
+	}
+
+	loadFromDB(checkCreate);
 
 	//tournaments list
 	socket.on('tournaments:list', function(){
 		socket.emit('tournaments:update', { tournaments: currentTournaments });
 	});
 
+	//+ Jonas Raoni Soares Silva
+	//@ http://jsfromhell.com/array/shuffle [v1.0]
+	function shuffle(o) { //v1.0
+		for (var j, x, i = o.length; i; j = parseInt(Math.random() * i,10), x = o[--i], o[i] = o[j], o[j] = x);
+		return o;
+	}
+
+	function checkStart(tournament) {
+		if (tournament.players === tournamentPlayers) {
+			tournament.started = true;
+			tournament.startTime = new Date();
+			tournament.round = 1;
+
+			var copy = shuffle(tournament.users);
+			tournament.bracket.round1.game1.push(copy[0]);
+			tournament.bracket.round1.game1.push(copy[1]);
+
+			tournament.bracket.round1.game2.push(copy[2]);
+			tournament.bracket.round1.game2.push(copy[3]);
+
+			tournament.bracket.round1.game3.push(copy[4]);
+			tournament.bracket.round1.game3.push(copy[5]);
+
+			tournament.bracket.round1.game4.push(copy[6]);
+			tournament.bracket.round1.game4.push(copy[7]);
+		}
+		return tournament;
+	}
+
 	//tournament join
 	socket.on('tournament:join', function(data) {
 		auth(data,function(userObj){
 			Tournament.find({_id: data.tournamentId}, function(err,tournaments) {
 				var tournament = tournaments[0];
-				if (tournament.players < 8) {
+				if (tournament.players < tournamentPlayers) {
 					//add to tournament
 					tournament.players++;
 					tournament.users.push({
@@ -242,11 +303,7 @@ module.exports = function(socket, io) {
 						username: userObj.username
 					});
 
-					if (tournament.players === 8) {
-						tournament.started = true;
-						tournament.startTime = new Date();
-						tournament.round = 1;
-					}
+					tournament = checkStart(tournament);
 
 					//save to the db
 					tournament.save(function(err,tournamentObj) {
@@ -262,6 +319,8 @@ module.exports = function(socket, io) {
 						//notify everyone
 						io.sockets.emit('tournament:update', {tournament: tournamentObj});
 						socket.emit('tournament:joined', {tournament: tournamentObj});
+
+						checkCreate();
 					});
 				} else {
 					socket.emit('tournament:error', 'Tournament is Full.');
@@ -298,5 +357,9 @@ module.exports = function(socket, io) {
 				});
 			});
 		});
+	});
+
+	socket.on('disconnect', function() {
+		logout(socket.user);
 	});
 };
