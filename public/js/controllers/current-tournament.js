@@ -11,6 +11,11 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 			$location.path('/tournaments');
 		}
 	});
+	$scope.$watch('user', function() {
+		if (!$scope.user.authed) {
+			$location.path('/tournaments');
+		}
+	});
 
 	//when the game starts, we want to reset the ready tracking
 	//so the server doesn't have to tell us (maybe we do want the server to tell us???)
@@ -89,12 +94,6 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 			}
 		});
 	};
-
-	$scope.$watch('user', function() {
-		if (!$scope.user.authed) {
-			$location.path('/tournaments');
-		}
-	});
 
 
 	/* visual tests

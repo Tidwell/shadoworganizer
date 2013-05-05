@@ -6,78 +6,36 @@ var tournamentPlayers = 8;
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/shadoworganizer');
 
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
 
 var loggedInUsers = [];
 var currentTournaments = [];
 
-var UserModel = new Schema({
-	username: String,
-	password: String,
-	inGameName: String,
-	email: String,
-	authed: Boolean,
-	games: {
-		wins: Number,
-		losses: Number
-	},
-	tournaments: [{
-		name: String,
-		id: ObjectId,
-		startTime: Date,
-		placing: Number,
-		payout: Number
-	}],
-	rating: Number,
-	tournamentWins: Number,
-	earnings: Number
-});
+//require models
+var TournamentModel = require('../models/tournament');
+var uM = require('../models/user');
+var UserModel = uM.UserModel;
+var condensedUser = uM.condensedUser;
 
-var condensedUser = {
-	username: String,
-	inGameName: String,
-	id: ObjectId
-};
-
-var TournamentModel = new Schema({
-	name: String,
-	active: Boolean,
-	started: Boolean,
-	ended: Boolean,
-	round: Number,
-	rules: [String],
-	payout: {
-		1: Number,
-		2: Number
-	},
-	startTime: Date,
-	players: Number,
-	users: [condensedUser],
-	bracket: {
-		round1: {
-			game1: [condensedUser],
-			game2: [condensedUser],
-			game3: [condensedUser],
-			game4: [condensedUser]
-		},
-		round2: {
-			game1: [condensedUser],
-			game2: [condensedUser]
-		},
-		round3: [condensedUser]
-	},
-	winner: condensedUser
-});
-
+//pass to mongoose
 var User = mongoose.model('User', UserModel);
 var Tournament = mongoose.model('Tournament', TournamentModel);
 
 //maybe this should just listen for events and route to the api with a .jsonp mock?
 module.exports = function(socket, io) {
+	socket.on('user:register', register);
+	socket.on('user:login', login);
+	socket.on('user:logout', logout);
+	socket.on('disconnect', logout);
+	socket.on('user:update', updateUser);
+	socket.on('user:forgot-password', forgotPassword);
+	socket.on('users:count',sendCount);
 
-	//registration
-	socket.on('user:register', function(userData) {
+	socket.on('tournaments:list', listTournaments);
+	socket.on('tournament:join', joinTournament);
+	socket.on('tournament:drop', dropTournament);
+
+
+	function register(userData) {
 		//make sure they sent a username & password
 		if (!userData.username || !userData.password) {
 			socket.emit('user:error', {
@@ -125,48 +83,29 @@ module.exports = function(socket, io) {
 				sendLogin(user);
 			});
 		});
-	});
+	}
 
-	//update
-	socket.on('user:update', function(userData) {
-		auth(userData, function(data) {
-			data.inGameName = userData.inGameName;
-			data.email = userData.email;
-			if (userData.newPassword) {
-				data.password = userData.newPassword;
-			}
-			data.save(function(err,user){
-				delete user.password;
-				socket.emit('user:updated', user);
-			});
+	function updateUser(userData) {
+		if (!socket.user) { authError(); return; }
+		socket.user.inGameName = userData.inGameName;
+		socket.user.email = userData.email;
+		if (userData.newPassword) {
+			socket.user.password = userData.newPassword;
+		}
+		socket.user.save(function(err,user){
+			delete user.password;
+			socket.emit('user:updated', user);
 		});
-	});
+	}
 
-	//login
-	socket.on('user:login', function(userData){
-		auth(userData, sendLogin);
-	});
-
-	//logout
-	socket.on('user:logout', logout);
-
-	socket.on('user:forgot-password', function(email){
-		//reset password to random
-
-		//send email with new password
-	});
-
-	socket.on('users:count',sendCount);
-
-	function logout(userData) {
-		auth(userData, function(data){
-			loggedInUsers.forEach(function(user,index){
-				if (user.username === userData.username) {
-					loggedInUsers.splice(index,1);
-					socket.emit('user:logged-out', {});
-					sendCount();
-				}
-			});
+	function logout() {
+		if (!socket.user) { authError(); }
+		loggedInUsers.forEach(function(user,index){
+			if (user.username === socket.user.username) {
+				loggedInUsers.splice(index,1);
+				socket.emit('user:logged-out', {});
+				sendCount(true);
+			}
 		});
 	}
 
@@ -178,7 +117,23 @@ module.exports = function(socket, io) {
 		io.sockets.emit('users:count', {count: loggedInUsers.length});
 	}
 
-	function sendLogin(data){
+	function login(data) {
+		//otherwise make sure they passed params
+		if (!data || typeof data.username !== 'string' || typeof data.password !== 'string' ) {
+			authError();
+			return;
+		}
+		//check the db
+		User.find({ username: data.username, password: data.password }, function(err,userData){
+			if (!userData.length) {
+				authError();
+				return;
+			}
+			sendLogin(userData);
+		});
+	}
+
+	function sendLogin(data) {
 		loggedInUsers.push(data);
 		socket.user = data;
 		delete data.password;
@@ -186,38 +141,94 @@ module.exports = function(socket, io) {
 		sendCount();
 	}
 
-	function auth(data, success) {
-		//if we already have their user obj on the scoket
-		if (socket.user) {
-			success(socket.user);
-		}
-		//otherwise make sure they passed params
-		if (!data || typeof data.username !== 'string' || typeof data.password !== 'string' ) {
-			error();
-			return;
-		}
-		//check the db
-		User.find({ username: data.username, password: data.password }, function(err,userData){
-			if (!userData.length) {
-				error();
+	function forgotPassword(email){
+		//reset password to random
+		//send email with new password
+	}
+
+	function listTournaments() {
+		socket.emit('tournaments:update', { tournaments: currentTournaments });
+	}
+
+	function joinTournament(data) {
+		if (!socket.user) { authError(); return; }
+		Tournament.find({_id: data.tournamentId}, function(err,tournaments) {
+			var tournament = tournaments[0];
+			if (tournament.players < tournamentPlayers) {
+				//add to tournament
+				tournament.players++;
+				tournament.users.push({
+					inGameName: socket.user.inGameName,
+					username: socket.user.username
+				});
+
+				tournament = checkStart(tournament);
+
+				//save to the db
+				tournament.save(function(err,tournamentObj) {
+					if (err) {
+						socket.emit('tournament:error', 'Error joining tournament.');
+					}
+					//check and see if it is stored in cache and update it if it is
+					currentTournaments.forEach(function(t,i){
+						if (t.id === tournamentObj.id) {
+							currentTournaments[i] = tournamentObj;
+						}
+					});
+					//notify everyone
+					io.sockets.emit('tournament:update', {tournament: tournamentObj});
+					socket.emit('tournament:joined', {tournament: tournamentObj});
+
+					checkCreate();
+				});
+			} else {
+				socket.emit('tournament:error', 'Tournament is Full.');
+			}
+		});
+	}
+
+	function dropTournament(data) {
+		if (!socket.user) { authError(); return; }
+		Tournament.find({_id: data.id}, function(err,tournaments){
+			if (!tournaments.length || err) {
+				socket.emit('tournament:error', {error: 'Faild to find tournament.'});
 				return;
 			}
-			success(userData[0]);
-		});
-
-		function error() {
-			socket.emit('user:error', {
-				error: 'Error authenticating, please login again.'
+			var tournamentObj = tournaments[0];
+			//remove the player
+			tournamentObj.players--;
+			tournamentObj.users.forEach(function(player, i) {
+				if (player.username === socket.user.username) {
+					tournamentObj.users.splice(i,1);
+					tournamentObj.save(function(err,tournamentObj) {
+						//check and see if it is stored in cache and update it if it is
+						currentTournaments.forEach(function(t,i){
+							if (t.id === tournamentObj.id) {
+								currentTournaments[i] = tournamentObj;
+							}
+						});
+						//notify everyone
+						io.sockets.emit('tournament:update', {tournament: tournamentObj});
+						socket.emit('tournament:dropped', {tournament: tournamentObj});
+					});
+				}
 			});
-		}
+		});
+	}
+
+
+	function authError() {
+			socket.emit('user:error', {
+			error: 'Error authenticating, please login again.'
+		});
 	}
 
 	function loadFromDB(cb) {
 		Tournament.find({active: true}, function(err,tournaments){
 			if (tournaments.length) {
 				currentTournaments = tournaments;
-				if (cb) { cb(); }
 			}
+			checkCreate();
 		});
 	}
 
@@ -254,12 +265,7 @@ module.exports = function(socket, io) {
 		});
 	}
 
-	loadFromDB(checkCreate);
-
-	//tournaments list
-	socket.on('tournaments:list', function(){
-		socket.emit('tournaments:update', { tournaments: currentTournaments });
-	});
+	loadFromDB();
 
 	//+ Jonas Raoni Soares Silva
 	//@ http://jsfromhell.com/array/shuffle [v1.0]
@@ -289,77 +295,4 @@ module.exports = function(socket, io) {
 		}
 		return tournament;
 	}
-
-	//tournament join
-	socket.on('tournament:join', function(data) {
-		auth(data,function(userObj){
-			Tournament.find({_id: data.tournamentId}, function(err,tournaments) {
-				var tournament = tournaments[0];
-				if (tournament.players < tournamentPlayers) {
-					//add to tournament
-					tournament.players++;
-					tournament.users.push({
-						inGameName: userObj.inGameName,
-						username: userObj.username
-					});
-
-					tournament = checkStart(tournament);
-
-					//save to the db
-					tournament.save(function(err,tournamentObj) {
-						if (err) {
-							socket.emit('tournament:error', 'Error joining tournament.');
-						}
-						//check and see if it is stored in cache and update it if it is
-						currentTournaments.forEach(function(t,i){
-							if (t.id === tournamentObj.id) {
-								currentTournaments[i] = tournamentObj;
-							}
-						});
-						//notify everyone
-						io.sockets.emit('tournament:update', {tournament: tournamentObj});
-						socket.emit('tournament:joined', {tournament: tournamentObj});
-
-						checkCreate();
-					});
-				} else {
-					socket.emit('tournament:error', 'Tournament is Full.');
-				}
-			});
-		});
-	});
-
-	socket.on('tournament:drop', function(data) {
-		auth(data, function(userObj){
-			Tournament.find({_id: data.id}, function(err,tournaments){
-				if (!tournaments.length || err) {
-					socket.emit('tournament:error', {error: 'Faild to find tournament.'});
-					return;
-				}
-				var tournamentObj = tournaments[0];
-				//remove the player
-				tournamentObj.players--;
-				tournamentObj.users.forEach(function(player, i) {
-					if (player.username === userObj.username) {
-						tournamentObj.users.splice(i,1);
-						tournamentObj.save(function(err,tournamentObj) {
-							//check and see if it is stored in cache and update it if it is
-							currentTournaments.forEach(function(t,i){
-								if (t.id === tournamentObj.id) {
-									currentTournaments[i] = tournamentObj;
-								}
-							});
-							//notify everyone
-							io.sockets.emit('tournament:update', {tournament: tournamentObj});
-							socket.emit('tournament:dropped', {tournament: tournamentObj});
-						});
-					}
-				});
-			});
-		});
-	});
-
-	socket.on('disconnect', function() {
-		logout(socket.user);
-	});
 };

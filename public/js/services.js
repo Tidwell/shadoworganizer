@@ -14,31 +14,6 @@ Services.value('sideboard', 'Your deck may be changed between games by making 1:
 
 
 //unconverted
-Services.factory('currentMatch', function($http, $rootScope) {
-	return {
-		get: function() {
-			var match = {
-				error: false
-			};
-
-			$http({
-				method: 'GET',
-				url: '/REST/match'
-			})
-				.success(function(data, status, headers, config) {
-				for (var property in data) {
-					match[property] = data[property];
-				}
-			})
-				.error(function(data, status, headers, config) {
-				match.error = 'Error getting tournament list';
-			});
-
-			return match;
-		}
-	};
-});
-
 Services.factory('currentGame', function($http, $rootScope) {
 	return {
 		get: function() {
