@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
 var ObjectId = Schema.Types.ObjectId;
+
 var condensedUser = require('./user').condensedUser;
 
 var TournamentModel = new Schema({
@@ -33,5 +34,7 @@ var TournamentModel = new Schema({
 	},
 	winner: condensedUser
 });
+
+TournamentModel = mongoose.model('Tournament', TournamentModel);
 
 module.exports = TournamentModel;

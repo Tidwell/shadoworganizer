@@ -15,7 +15,35 @@ function TournamentsController($scope, $http, $location, tournaments, user, curr
 		$scope.tournament = currentTournament.drop(id);
 	};
 
+	var awaitingJoinId;
+
+	$scope.$watch('user.inGameName', function(val){
+		if (val && awaitingJoinId) {
+			$scope.joinTournament(awaitingJoinId);
+		}
+	});
+
 	$scope.joinTournament = function(id) {
+		if (!$scope.user.inGameName) {
+			//prompt for ingamename
+			var d = $dialog.dialog({
+				backdrop: true,
+				keyboard: true,
+				backdropClick: true,
+				templateUrl: 'partials/set-in-game-name-dialog',
+				controller: 'SetInGameNameDialogController'
+			});
+			d.open().then(function(result) {
+				if (result) {
+					$scope.user.inGameName = result;
+					user.update();
+					awaitingJoinId = id;
+					return;
+				}
+				awaitingJoinId = false;
+			});
+			return;
+		}
 		$scope.tournament = currentTournament.join(id);
 	};
 

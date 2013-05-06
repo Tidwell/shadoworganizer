@@ -30,6 +30,12 @@ function FirstPlayerDialogController($scope, dialog, currentMatch) {
 	};
 }
 
+function SetInGameNameDialogController($scope, dialog, user) {
+	$scope.close = function(result) {
+		dialog.close(result);
+	};
+}
+
 /* for in-lining the game */
 function GameController() {
 

@@ -1,0 +1,19 @@
+<form>
+<div class="modal-header">
+  <h1>Set In-Game Name</h1>
+</div>
+<div class="modal-body">
+  <div class="alert alert-info">
+    <div class="large-alert">
+      <i class="icon-info-sign pull-left"></i>
+      <p>In order to participate in a tournament, you must set your In-Game Name.  This should match the username of the Shadow Era account you wish to compete with.  You can always change or remove this after the tournament from the Acccount screen.
+      </p>
+        <input type="text" placeholder="In-Game Name" ng-model="inGameName" required />
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button ng-click="close(inGameName)" class="btn btn-primary">Save In-Game Name</button>
+  <button ng-click="close()" class="btn btn">Cancel</button>
+</div>
+</form>

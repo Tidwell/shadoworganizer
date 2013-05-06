@@ -2,16 +2,6 @@
  * Serve JSON
  */
 
-exports.match = function(req,res) {
-	res.jsonp({
-		opponentName: 'Alden the Brave',
-		game: 1,
-		ready: false,
-		oppReady: false,
-		winner: null //opponent or self
-	});
-};
-
 exports.game = function(req,res) {
 	res.jsonp({
 		started: true,

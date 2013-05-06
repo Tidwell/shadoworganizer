@@ -25,6 +25,8 @@ var UserModel = new Schema({
 	earnings: Number
 });
 
+UserModel = mongoose.model('User', UserModel);
+
 var condensedUser = {
 	username: String,
 	inGameName: String,

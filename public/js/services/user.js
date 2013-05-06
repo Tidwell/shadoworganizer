@@ -35,6 +35,7 @@ Services.factory('user', function($http, $rootScope, socket) {
 	socket.on('user:login', updateUser);
 
 	function updateUser(data){
+		console.log(data);
 		for (var property in data) {
 			user[property] = data[property];
 		}

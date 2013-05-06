@@ -3,22 +3,15 @@
  */
 var tournamentPlayers = 8;
 
-var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/shadoworganizer');
-
-
 var loggedInUsers = [];
 var currentTournaments = [];
 
 //require models
-var TournamentModel = require('../models/tournament');
-var uM = require('../models/user');
-var UserModel = uM.UserModel;
-var condensedUser = uM.condensedUser;
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/shadoworganizer');
 
-//pass to mongoose
-var User = mongoose.model('User', UserModel);
-var Tournament = mongoose.model('Tournament', TournamentModel);
+var User = require('../models/user').UserModel;
+var Tournament = require('../models/tournament');
 
 function loadFromDB(cb) {
 	Tournament.find({active: true}, function(err,tournaments){
@@ -29,8 +22,8 @@ function loadFromDB(cb) {
 	});
 }
 
+//check if we need to create a tournament (none currently running)
 function checkCreate(io) {
-	//on load populate unstarted tournaments from the DB
 	var createNew = true;
 	currentTournaments.forEach(function(t){
 		if (t.started === false) {
@@ -73,7 +66,7 @@ module.exports = function(socket, io) {
 	socket.on('disconnect', logout);
 	socket.on('user:update', updateUser);
 	socket.on('user:forgot-password', forgotPassword);
-	socket.on('users:count',sendCount);
+	socket.on('users:count',sendCountUser);
 
 	socket.on('tournaments:list', listTournaments);
 	socket.on('tournament:join', joinTournament);
@@ -144,22 +137,21 @@ module.exports = function(socket, io) {
 	}
 
 	function logout() {
-		if (!socket.user) { authError(); }
+		if (!socket.user) { authError(); return; }
 		loggedInUsers.forEach(function(user,index){
 			if (user.username === socket.user.username) {
 				loggedInUsers.splice(index,1);
 				socket.emit('user:logged-out', {});
-				sendCount(true);
+				sendCount();
 			}
 		});
 	}
 
-	function sendCount(all) {
-		if (!all) {
-			socket.emit('users:count', {count: loggedInUsers.length});
-			return;
-		}
+	function sendCount() {
 		io.sockets.emit('users:count', {count: loggedInUsers.length});
+	}
+	function sendCountUser() {
+		socket.emit('users:count', {count: loggedInUsers.length});
 	}
 
 	function login(data) {
@@ -174,7 +166,7 @@ module.exports = function(socket, io) {
 				authError();
 				return;
 			}
-			sendLogin(userData);
+			sendLogin(userData[0]);
 		});
 	}
 
