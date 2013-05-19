@@ -10,19 +10,13 @@
 		- finished/spectate view (allows chat in running tournaments?)
 		- general chat
 		- user profiles (account view without the settings)
-		- running tournament status on tournaments screen
 		- help/faq page
-
-
-		//- rating leaderboard
-
+		- analytics
 
 	FE->BE
-		- all service calls from controllers
-		- adujust match and game services to match tournament
-		- users service
-		- disconnect handler
-		- socket.io integration (replace TODO in services and add pubsub)
+		- create round/game subdocument models
+			=> adjust FE current-tournament view and currentTournamentController
+		- adjust round/game services
 
 	BE
 
@@ -83,6 +77,12 @@ Service auto-reconnect
 
 
 ##after launch
+
+rating leaderboard
+
+private tournaments
+
+async tournaments
 
 Allow creating tournaments with prize-request email generation and alternate rules
 (hero lock, sideboard, etc)

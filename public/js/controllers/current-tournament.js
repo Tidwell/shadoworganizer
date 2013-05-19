@@ -11,29 +11,6 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 			$location.path('/tournaments');
 		}
 	});
-	$scope.$watch('user', function() {
-		if (!$scope.user.authed) {
-			$location.path('/tournaments');
-		}
-	});
-
-	//when the game starts, we want to reset the ready tracking
-	//so the server doesn't have to tell us (maybe we do want the server to tell us???)
-	$scope.$watch('currentGame.started', function() {
-		if ($scope.currentGame.started === true) {
-			$scope.currentMatch.ready = false;
-			$scope.currentMatch.oppReady = false;
-		}
-	});
-
-	//when a winner is declared, we want to reset the ready tracking
-	//so the server doesn't have to tell us (maybe we do want the server to tell us???)
-	$scope.$watch('currentMatch.winner', function() {
-		if ($scope.currentGame.started === true) {
-			$scope.currentMatch.ready = false;
-			$scope.currentMatch.oppReady = false;
-		}
-	});
 
 	$scope.gameResult = function(result) {
 		$scope.currentGame.result = result;

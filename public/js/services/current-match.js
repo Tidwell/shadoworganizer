@@ -22,16 +22,21 @@ Services.factory('currentMatch', function($http, $rootScope, user, currentTourna
 	socket.on('tournament:update', checkForActive);
 
 	function checkForActive() {
-		console.log(tournament);
-		if (tournament.tournament._id) {
+		console.log('checking', tournament)
+		if (tournament.tournament._id && tournament.tournament.round) {
 			var round = 'round'+tournament.tournament.round;
-			var gamesInRound = tournament.tournament.round === 1 ? 4 : tournament.tournament.round === 2 ? 2 : 1;
-			console.log(round,gamesInRound);
-			for (var i = 1; i < gamesInRound; i++) {
-				var rnd = tournament.tournament.bracket[round]['game'+i];
-				if (rnd[0].username === u.username || rnd[1].username === u.username) {
-					console.log('rnd found', rnd);
-					match.match.opponentName = rnd[0].username === u.username ? (rnd[1].inGameName || rnd[1].username) : (rnd[0].inGameName || rnd[0].username);
+			//determine how many matches there are
+			var matchesInRound = tournament.tournament.round === 1 ? 4 : tournament.tournament.round === 2 ? 2 : 1;
+
+			for (var i = 1; i <= matchesInRound; i++) {
+				var rndMatch = tournament.tournament.bracket[round]['game'+i][0];
+				console.log(rndMatch, 'match');
+				if (rndMatch.players[0].username === u.username || rndMatch.players[1].username === u.username) {
+					if (rndMatch.players[0].username === u.username) {
+						match.match.opponentName = rndMatch.players[1].inGameName || rndMatch.players[1].username;
+					} else {
+						match.match.opponentName = rndMatch.players[0].inGameName || rndMatch.players[0].username;
+					}
 				}
 			}
 		}

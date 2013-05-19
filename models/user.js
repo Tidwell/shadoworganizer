@@ -27,13 +27,13 @@ var UserModel = new Schema({
 
 UserModel = mongoose.model('User', UserModel);
 
-var condensedUser = {
+var condensedUser = new Schema({
 	username: String,
 	inGameName: String,
 	id: ObjectId
-};
+});
 
 module.exports = {
-	UserModel: UserModel,
-	condensedUser: condensedUser
+	UserModel: UserModel, //model
+	condensedUser: condensedUser //schema
 };

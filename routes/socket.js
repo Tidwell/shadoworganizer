@@ -11,7 +11,9 @@ var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/shadoworganizer');
 
 var User = require('../models/user').UserModel;
-var Tournament = require('../models/tournament');
+var Tournament = require('../models/tournament').Tournament;
+var Match = require('../models/tournament').Match;
+var Game = require('../models/tournament').Game;
 
 function loadFromDB(cb) {
 	Tournament.find({active: true}, function(err,tournaments){
@@ -46,6 +48,7 @@ function checkCreate(io) {
 		},
 		startTime: new Date(),
 		players: 0,
+		minPlayers: 8,
 		users: []
 	});
 
@@ -191,16 +194,12 @@ module.exports = function(socket, io) {
 		if (!socket.user) { authError(); return; }
 		Tournament.find({_id: data.tournamentId}, function(err,tournaments) {
 			var tournament = tournaments[0];
-			if (tournament.players < tournamentPlayers) {
-				//add to tournament
-				tournament.players++;
-				tournament.users.push({
-					inGameName: socket.user.inGameName,
-					username: socket.user.username
-				});
-
-				tournament = checkStart(tournament);
-
+			var added = tournament.addUser({
+				inGameName: socket.user.inGameName,
+				username: socket.user.username
+			});
+			if (added) {
+				console.log('tournament should be go', tournament);
 				//save to the db
 				tournament.save(function(err,tournamentObj) {
 					if (err) {
@@ -232,23 +231,19 @@ module.exports = function(socket, io) {
 				return;
 			}
 			var tournamentObj = tournaments[0];
-			//remove the player
-			tournamentObj.players--;
-			tournamentObj.users.forEach(function(player, i) {
-				if (player.username === socket.user.username) {
-					tournamentObj.users.splice(i,1);
-					tournamentObj.save(function(err,tournamentObj) {
-						//check and see if it is stored in cache and update it if it is
-						currentTournaments.forEach(function(t,i){
-							if (t.id === tournamentObj.id) {
-								currentTournaments[i] = tournamentObj;
-							}
-						});
-						//notify everyone
-						io.sockets.emit('tournament:update', {tournament: tournamentObj});
-						socket.emit('tournament:dropped', {tournament: tournamentObj});
-					});
-				}
+			var removed = tournamentObj.removeUser(socket.user);
+			if (!removed) { return; }
+
+			tournamentObj.save(function(err,tournamentObj) {
+				//check and see if it is stored in cache and update it if it is
+				currentTournaments.forEach(function(t,i){
+					if (t.id === tournamentObj.id) {
+						currentTournaments[i] = tournamentObj;
+					}
+				});
+				//notify everyone
+				io.sockets.emit('tournament:update', {tournament: tournamentObj});
+				socket.emit('tournament:dropped', {tournament: tournamentObj});
 			});
 		});
 	}
@@ -265,27 +260,5 @@ module.exports = function(socket, io) {
 	function shuffle(o) { //v1.0
 		for (var j, x, i = o.length; i; j = parseInt(Math.random() * i,10), x = o[--i], o[i] = o[j], o[j] = x);
 		return o;
-	}
-
-	function checkStart(tournament) {
-		if (tournament.players === tournamentPlayers) {
-			tournament.started = true;
-			tournament.startTime = new Date();
-			tournament.round = 1;
-
-			var copy = shuffle(tournament.users);
-			tournament.bracket.round1.game1.push(copy[0]);
-			tournament.bracket.round1.game1.push(copy[1]);
-
-			tournament.bracket.round1.game2.push(copy[2]);
-			tournament.bracket.round1.game2.push(copy[3]);
-
-			tournament.bracket.round1.game3.push(copy[4]);
-			tournament.bracket.round1.game3.push(copy[5]);
-
-			tournament.bracket.round1.game4.push(copy[6]);
-			tournament.bracket.round1.game4.push(copy[7]);
-		}
-		return tournament;
 	}
 };
