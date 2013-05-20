@@ -9,7 +9,7 @@ tournament:update
 sends
 tournament:list
 */
-Services.factory('tournaments', function($http, $rootScope, socket, user) {
+Services.service('tournaments', function($http, $rootScope, socket, user) {
 	var userObj = user.get();
 	var tournaments = {
 		tournaments: [],

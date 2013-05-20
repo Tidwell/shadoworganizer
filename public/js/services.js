@@ -14,7 +14,7 @@ Services.value('sideboard', 'Your deck may be changed between games by making 1:
 
 
 //unconverted
-Services.factory('currentGame', function($http, $rootScope) {
+Services.service('currentGame', function($http, $rootScope) {
 	return {
 		get: function() {
 			var game = {

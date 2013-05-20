@@ -1,4 +1,4 @@
-Services.factory('currentMatch', function($http, $rootScope, user, currentTournament, socket) {
+Services.service('currentMatch', function($http, $rootScope, user, currentTournament, socket) {
 	var tournament = currentTournament.get();
 	var u = user.get();
 
@@ -22,7 +22,6 @@ Services.factory('currentMatch', function($http, $rootScope, user, currentTourna
 	socket.on('tournament:update', checkForActive);
 
 	function checkForActive() {
-		console.log('checking', tournament)
 		if (tournament.tournament._id && tournament.tournament.round) {
 			var round = 'round'+tournament.tournament.round;
 			//determine how many matches there are
@@ -30,7 +29,6 @@ Services.factory('currentMatch', function($http, $rootScope, user, currentTourna
 
 			for (var i = 1; i <= matchesInRound; i++) {
 				var rndMatch = tournament.tournament.bracket[round]['game'+i][0];
-				console.log(rndMatch, 'match');
 				if (rndMatch.players[0].username === u.username || rndMatch.players[1].username === u.username) {
 					if (rndMatch.players[0].username === u.username) {
 						match.match.opponentName = rndMatch.players[1].inGameName || rndMatch.players[1].username;
@@ -41,6 +39,8 @@ Services.factory('currentMatch', function($http, $rootScope, user, currentTourna
 			}
 		}
 	}
+
+	checkForActive();
 
 	return {
 		get: function() {

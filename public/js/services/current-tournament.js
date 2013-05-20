@@ -18,7 +18,7 @@ tournament:join
 tournament:drop
 
 */
-Services.factory('currentTournament', function($http, $rootScope, socket, user, tournaments) {
+Services.service('currentTournament', function($http, $rootScope, socket, user, tournaments) {
 	var tournament = {
 		dropped: false,
 		joined: false,
@@ -36,6 +36,7 @@ Services.factory('currentTournament', function($http, $rootScope, socket, user, 
 	socket.on('user:logged-out', checkForActive);
 	socket.on('tournaments:update', checkForActive);
 	socket.on('tournament:update', checkForActive);
+	socket.on('tournament:joined',checkForActive);
 
 	function checkForActive() {
 		var activeFound;
@@ -57,6 +58,8 @@ Services.factory('currentTournament', function($http, $rootScope, socket, user, 
 	socket.on('tournament:joined', function(data){
 		tournament.joined = true;
 	});
+
+	checkForActive();
 
 	return {
 		get: function() {

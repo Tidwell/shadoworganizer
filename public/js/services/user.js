@@ -16,7 +16,7 @@ user:logout
 user:update
 
 */
-Services.factory('user', function($http, $rootScope, socket) {
+Services.service('user', function($http, $rootScope, socket) {
 	var userTemplate = {
 		error: false,
 		authed: false
