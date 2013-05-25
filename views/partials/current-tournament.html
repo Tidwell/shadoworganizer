@@ -1,47 +1,54 @@
 <div class="container">
+	<br />
+	<br />
+	<br />
+	{{currentMatch}}
+	<br /><br />
 	{{currentGame}}
 	<div class="row">
 		<h3 class="pull-right">Auto-Generated 8-Man <button ng-click="drop()" class="btn btn-danger"><i class="icon-ban-circle"></i> Drop</button></h3>
 		<span class="clearfix"></span>
 		<div class="span6">
+			<!--when tournament started-->
 			<div class="row-fluid" ng-show="tournament.tournament.started && !tournament.tournament.dropped">
-				<div class="well" ng-show="currentGame.started && !currentMatch.match.winner">
+				<!-- if the current game has begun -->
+				<div class="well" ng-show="currentGame.game.started && !currentMatch.match.winner">
 					<h4 class="span6">Round {{tournament.tournament.round}} - Game {{currentMatch.match.game}}</h4>
-					<h5 class="span6" style="text-align: right">{{user.inGameName || user.username}} vs {{currentMatch.match.opponentName}} <button ng-click="concede()" class="btn btn-danger" ng-show="!currentGame.result"><i class="icon-ban-circle"></i> Concede Game</button></h5>
+					<h5 class="span6" style="text-align: right">{{user.inGameName || user.username}} vs {{currentMatch.match.opponentName}} <button ng-click="concede()" class="btn btn-danger" ng-show="!currentGame.game.result"><i class="icon-ban-circle"></i> Concede Game</button></h5>
 
 					<hr>
-					<div class="alert alert-success" ng-show="!currentGame.result && currentGame.password">
-						<strong>Game Password: {{currentGame.password}}</strong>
+					<div class="alert alert-success" ng-show="!currentGame.game.result && currentGame.game.password">
+						<strong>Game Password: {{currentGame.game.password}}</strong>
 					</div>
-					<div class="alert alert-info" ng-show="!currentGame.result && currentGame.forceFirstTurn">
-						<p ng-show="currentGame.forceFirstTurn=='opponent'">
+					<div class="alert alert-info" ng-show="!currentGame.game.result && currentGame.game.forceFirstTurn">
+						<p ng-show="currentGame.game.forceFirstTurn=='opponent'">
 							<strong>
 								{{currentMatch.match.opponentName}} will go first this game.
 							</strong>
 						</p>
-						<p ng-show="currentGame.forceFirstTurn=='opponent'">
+						<p ng-show="currentGame.game.forceFirstTurn=='opponent'">
 							<strong>{{currentMatch.match.opponentName}} will create the game</strong> until they are the first player. Search for their In-Game name from the matchmaking screen and join the game that is in "Waiting" status.
 						</p>
-						<p ng-show="currentGame.forceFirstTurn=='self'">
+						<p ng-show="currentGame.game.forceFirstTurn=='self'">
 							<strong>
 								You will go first this game.
 							</strong>
 						</p>
-						<p ng-show="currentGame.forceFirstTurn=='self'">
-							<strong>You should create the game using the password {{currentGame.password}}</strong>. If you do not randomly recieve the first turn, quit the game and recreate with the same password.
+						<p ng-show="currentGame.game.forceFirstTurn=='self'">
+							<strong>You should create the game using the password {{currentGame.game.password}}</strong>. If you do not randomly recieve the first turn, quit the game and recreate with the same password.
 						</p>
 					</div>
 
-					<div class="alert alert-info" ng-show="!currentGame.result && currentGame.creator">
-						<p ng-show="currentGame.creator=='opponent'">
+					<div class="alert alert-info" ng-show="!currentGame.game.result && currentGame.game.creator">
+						<p ng-show="currentGame.game.creator=='opponent'">
 							<strong>{{currentMatch.match.opponentName}} will create the game</strong>. Search for their In-Game name from the matchmaking screen and join the game that is in "Waiting" status.
 						</p>
-						<p ng-show="currentGame.creator=='self'">
-							<strong>You should create the game using the password {{currentGame.password}}</strong>.
+						<p ng-show="currentGame.game.creator=='self'">
+							<strong>You should create the game using the password {{currentGame.game.password}}</strong>.
 						</p>
 					</div>
 
-					<div class="well alert alert-warning" ng-show="currentGame.syncError">
+					<div class="well alert alert-warning" ng-show="currentGame.game.syncError">
 						<div class="large-alert">
 							<i class="icon-warning-sign pull-left"></i>
 							<p>
@@ -50,32 +57,32 @@
 						</div>
 					</div>
 
-					<div class="well alert alert-error" ng-show="currentGame.resultError=='winner'">
+					<div class="well alert alert-error" ng-show="currentGame.game.resultError=='winner'">
 						<div class="large-alert">
 							<i class="icon-exclamation-sign pull-left"></i>
 							<p>
-								There is a problem with reporting your game. You have reported that <strong ng-show="currentGame.result!='draw'">
-										<span ng-show="currentGame.result=='win'">You</span>
-										<span ng-show="currentGame.result=='loss'">{{currentMatch.match.opponentName}}</span>
-									won the current game</strong><strong ng-show="currentGame.result=='draw'">the game was a draw</strong>, and {{currentMatch.match.opponentName}} reported that <strong ng-show="currentGame.oppResult!='draw'">
-										<span ng-show="currentGame.oppResult=='loss'">You</span>
-										<span ng-show="currentGame.oppResult=='win'">{{currentMatch.match.opponentName}}</span>
-									won the current game</strong><strong ng-show="currentGame.oppResult=='draw'">the game was a draw</strong>.  Please resolve the discrepancy using chat and have the incorrect player change their result.
+								There is a problem with reporting your game. You have reported that <strong ng-show="currentGame.game.result!='draw'">
+										<span ng-show="currentGame.game.result=='win'">You</span>
+										<span ng-show="currentGame.game.result=='loss'">{{currentMatch.match.opponentName}}</span>
+									won the current game</strong><strong ng-show="currentGame.game.result=='draw'">the game was a draw</strong>, and {{currentMatch.match.opponentName}} reported that <strong ng-show="currentGame.game.oppResult!='draw'">
+										<span ng-show="currentGame.game.oppResult=='loss'">You</span>
+										<span ng-show="currentGame.game.oppResult=='win'">{{currentMatch.match.opponentName}}</span>
+									won the current game</strong><strong ng-show="currentGame.game.oppResult=='draw'">the game was a draw</strong>.  Please resolve the discrepancy using chat and have the incorrect player change their result.
 							</p>
 						</div>
 					</div>
 
-					<div class="well alert alert-error" ng-show="currentGame.resultError=='firstturn'">
+					<div class="well alert alert-error" ng-show="currentGame.game.resultError=='firstturn'">
 						<div class="large-alert">
 							<i class="icon-exclamation-sign pull-left"></i>
 							<p>
 								<p>
 								There is a problem with reporting who went first. You have reported that <strong>
-										<span ng-show="currentGame.firstTurn=='self'">You</span>
-										<span ng-show="currentGame.firstTurn=='opponent'">{{currentMatch.match.opponentName}}</span>
+										<span ng-show="currentGame.game.firstTurn=='self'">You</span>
+										<span ng-show="currentGame.game.firstTurn=='opponent'">{{currentMatch.match.opponentName}}</span>
 									went first</strong>, and {{currentMatch.match.opponentName}} reported that <strong>
-										<span ng-show="currentGame.firstTurn=='opponent'">You</span>
-										<span ng-show="currentGame.firstTurn=='self'">They</span>
+										<span ng-show="currentGame.game.firstTurn=='opponent'">You</span>
+										<span ng-show="currentGame.game.firstTurn=='self'">They</span>
 									went first</strong>.  Please resolve the discrepancy using chat and have the incorrect player change their result.
 								</p>
 								<button class="btn btn-info pull-right" ng-click="confirmFirstTurn()">Change your answer</button>
@@ -84,14 +91,14 @@
 						</div>
 					</div>
 
-					<div class="well alert alert-success" ng-show="currentGame.resultConfirmed">
+					<div class="well alert alert-success" ng-show="currentGame.game.resultConfirmed">
 						<div class="large-alert">
 							<i class="icon-ok-circle pull-left"></i>
 							<p>
-								This game has successfully been reported that <strong ng-show="currentGame.result!='draw'">
-									<span ng-show="currentGame.result=='win'">You</span>
-									<span ng-show="currentGame.result=='loss'">{{currentMatch.match.opponentName}}</span>
-								won the current game</strong><strong ng-show="currentGame.result=='draw'">the game was a draw</strong>.
+								This game has successfully been reported that <strong ng-show="currentGame.game.result!='draw'">
+									<span ng-show="currentGame.game.result=='win'">You</span>
+									<span ng-show="currentGame.game.result=='loss'">{{currentMatch.match.opponentName}}</span>
+								won the current game</strong><strong ng-show="currentGame.game.result=='draw'">the game was a draw</strong>.
 
 								<button class="btn btn-info pull-right" ng-show="currentMatch.match.game!=3 && !currentMatch.match.ready" ng-click="ready()">Next Game</button>
 							</p>
@@ -104,19 +111,19 @@
 						<div class="clearfix"></div>
 					</div>
 
-					<div class="well alert alert-success" ng-show="currentGame.result && !currentGame.resultConfirmed">
+					<div class="well alert alert-success" ng-show="currentGame.game.result && !currentGame.game.resultConfirmed">
 						<div class="large-alert">
 							<i class="icon-ok pull-left"></i>
 							<p>
-								You have reported that <strong ng-show="currentGame.result!='draw'">
-									<span ng-show="currentGame.result=='win'">You</span>
-									<span ng-show="currentGame.result=='loss'">{{currentMatch.match.opponentName}}</span>
-								won the current game</strong><strong ng-show="currentGame.result=='draw'">the game was a draw</strong>.
+								You have reported that <strong ng-show="currentGame.game.result!='draw'">
+									<span ng-show="currentGame.game.result=='win'">You</span>
+									<span ng-show="currentGame.game.result=='loss'">{{currentMatch.match.opponentName}}</span>
+								won the current game</strong><strong ng-show="currentGame.game.result=='draw'">the game was a draw</strong>.
 							</p>
 							<p>
 								You have reported that <strong>
-										<span ng-show="currentGame.firstTurn=='self'">You</span>
-										<span ng-show="currentGame.firstTurn=='opponent'">{{currentMatch.match.opponentName}}</span>
+										<span ng-show="currentGame.game.firstTurn=='self'">You</span>
+										<span ng-show="currentGame.game.firstTurn=='opponent'">{{currentMatch.match.opponentName}}</span>
 									went first</strong>.
 							</p>
 							<div class="clearfix"></div>
@@ -127,8 +134,8 @@
 						<div class="clearfix"></div>
 					</div>
 
-					<div ng-show="!currentGame.result || currentGame.resultError">
-						<div class="btn-group" ng-show="!currentGame.resultError || currentGame.resultError=='winner'">
+					<div ng-show="!currentGame.game.result || currentGame.game.resultError">
+						<div class="btn-group" ng-show="!currentGame.game.resultError || currentGame.game.resultError=='winner'">
 						  <button class="btn btn-success dropdown-toggle" data-toggle="dropdown">
 						  	<i class="icon-ok-circle"></i> Game Result
 						    <span class="caret"></span>
@@ -162,9 +169,11 @@
 						</div>
 					</div>
 				</div>
-				<div class="well" ng-show="!currentGame.started">
+
+				<!-- before game start -->
+				<div class="well" ng-show="!currentGame.game.started">
 					<h4 class="span6">Round {{tournament.tournament.round}} - Game {{currentMatch.match.game}}</h4>
-					<h5 class="span6" style="text-align: right">Baduruu vs {{currentMatch.match.opponentName}}</h5>
+					<h5 class="span6" style="text-align: right">{{user.inGameName}} vs {{currentMatch.match.opponentName}}</h5>
 
 					<hr>
 					<div class="alert alert-info">
@@ -177,6 +186,9 @@
 						</p>
 					</div>
 				</div>
+
+
+				<!-- after game end -->
 				<div class="well" ng-show="currentMatch.match.winner">
 					<h4 class="span6">Round {{tournament.tournament.round}}</h4>
 					<h5 class="span6" style="text-align: right">Baduruu vs {{currentMatch.match.opponentName}}</h5>
@@ -311,26 +323,26 @@
 								<div class="round3-top">{{tournament.tournament.bracket.round3[0].inGameName || tournament.tournament.bracket.round3[0].username}}</div>
 								<div class="round2-topwrap">
 									<div class="round2-top">{{tournament.tournament.bracket.round2.game1[0].inGameName || tournament.tournament.bracket.round2.game1[0].username}}</div>
-									<div class="round1-top">{{tournament.tournament.bracket.round1.game1[0].inGameName || tournament.tournament.bracket.round1.game1[0].username}}</div>
-									<div class="round1-bottom">{{tournament.tournament.bracket.round1.game1[1].inGameName || tournament.tournament.bracket.round1.game1[1].username}}</div>
+									<div class="round1-top">{{tournament.tournament.bracket.round1.game1.players[0].inGameName}}</div>
+									<div class="round1-bottom">{{tournament.tournament.bracket.round1.game1.players[1].inGameName}}</div>
 								</div>
 								<div class="round2-bottomwrap">
 									<div class="round2-bottom">{{tournament.tournament.bracket.round2.game1[1].inGameName || tournament.tournament.bracket.round2.game1[1].username}}</div>
-									<div class="round1-top">{{tournament.tournament.bracket.round1.game2[0].inGameName || tournament.tournament.bracket.round1.game2[0].username}}</div>
-									<div class="round1-bottom">{{tournament.tournament.bracket.round1.game2[1].inGameName || tournament.tournament.bracket.round1.game2[1].username}}</div>
+									<div class="round1-top">{{tournament.tournament.bracket.round1.game2.players[0].inGameName}}</div>
+									<div class="round1-bottom">{{tournament.tournament.bracket.round1.game2.players[1].inGameName}}</div>
 								</div>
 							</div>
 							<div class="round3-bottomwrap">
 								<div class="round3-bottom">{{tournament.tournament.bracket.round3[1].inGameName || tournament.tournament.bracket.round3[1].username}}</div>
 								<div class="round2-topwrap">
 									<div class="round2-top">{{tournament.tournament.bracket.round2.game2[0].inGameName || tournament.tournament.bracket.round2.game2[0].username}}</div>
-									<div class="round1-top">{{tournament.tournament.bracket.round1.game3[0].inGameName || tournament.tournament.bracket.round1.game3[0].username}}</div>
-									<div class="round1-bottom">{{tournament.tournament.bracket.round1.game3[1].inGameName || tournament.tournament.bracket.round1.game3[1].username}}</div>
+									<div class="round1-top">{{tournament.tournament.bracket.round1.game3.players[0].inGameName}}</div>
+									<div class="round1-bottom">{{tournament.tournament.bracket.round1.game3.players[1].inGameName}}</div>
 								</div>
 								<div class="round2-bottomwrap">
 									<div class="round2-bottom">{{tournament.tournament.bracket.round2.game2[1].inGameName || tournament.tournament.bracket.round2.game2[1].username}}</div>
-									<div class="round1-top">{{tournament.tournament.bracket.round1.game4[0].inGameName || tournament.tournament.bracket.round1.game4[0].username}}</div>
-									<div class="round1-bottom">{{tournament.tournament.bracket.round1.game4[1].inGameName || tournament.tournament.bracket.round1.game4[1].username}}</div>
+									<div class="round1-top">{{tournament.tournament.bracket.round1.game4.players[0].inGameName}}</div>
+									<div class="round1-bottom">{{tournament.tournament.bracket.round1.game4.players[1].inGameName}}</div>
 								</div>
 							</div>
 						</div>

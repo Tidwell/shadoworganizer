@@ -5,28 +5,19 @@ var ObjectId = Schema.Types.ObjectId;
 
 var condensedUser = require('./user').condensedUser;
 
-var GameSchema = new Schema({
+var GameSchema = {
 	started: Boolean,
 	password: String,
-	forceFirstTurn: String,
+	forceFirstTurn: String, //username
 	creator: String,
 
-	result: [String],
-	firstTurn: [String],
+	result: {player0: String, player1: String},
+	firstTurn: {player0: String, player1: String},
 	resultConfirmed: Boolean,
 
 	resultError: String,
 	syncError: Boolean
-});
-
-var MatchSchema = new Schema({
-	players: [condensedUser],
-	game: Number,
-	ready: [Boolean],
-	winner: String,
-	error: Boolean,
-	games: [GameSchema]
-});
+};
 
 var TournamentSchema = new Schema({
 	name: String,
@@ -45,17 +36,66 @@ var TournamentSchema = new Schema({
 	users: [condensedUser],
 	bracket: {
 		round1: {
-					game1: [MatchSchema],
-					game2: [MatchSchema],
-					game3: [MatchSchema],
-					game4: [MatchSchema]
+					game1: {
+						players: [condensedUser],
+						game: Number,
+						ready: {player0: false, player1: false},
+						winner: String,
+						error: Boolean,
+						games: [GameSchema]
+					},
+					game2: {
+						players: [condensedUser],
+						game: Number,
+						ready: {player0: false, player1: false},
+						winner: String,
+						error: Boolean,
+						games: [GameSchema]
+					},
+					game3: {
+						players: [condensedUser],
+						game: Number,
+						ready: {player0: false, player1: false},
+						winner: String,
+						error: Boolean,
+						games: [GameSchema]
+					},
+					game4: {
+						players: [condensedUser],
+						game: Number,
+						ready: {player0: false, player1: false},
+						winner: String,
+						error: Boolean,
+						games: [GameSchema]
+					}
 				},
 		round2: {
-			game1: [MatchSchema],
-			game2: [MatchSchema]
+			game1: {
+				players: [condensedUser],
+				game: Number,
+				ready: {player0: false, player1: false},
+				winner: String,
+				error: Boolean,
+				games: [GameSchema]
+			},
+			game2: {
+				players: [condensedUser],
+				game: Number,
+				ready: {player0: false, player1: false},
+				winner: String,
+				error: Boolean,
+				games: [GameSchema]
+			}
 		},
 		round3: {
-			game1: [MatchSchema]
+			game1: {
+				players: [condensedUser],
+				game: Number,
+				ready: {player0: false, player1: false},
+				winner: String,
+				error: Boolean,
+				games: [GameSchema]
+			}
 		}
 	},
 	winner: [condensedUser]
@@ -65,7 +105,7 @@ var MatchObj = function() {
 	return {
 		players: [],
 		game: 0,
-		ready: [false,false],
+		ready: {player0: false, player1: false},
 		games: []
 	};
 };
@@ -123,31 +163,56 @@ TournamentSchema.methods.start = function() {
 	var match = new MatchObj();
 	var matchIndex = 1;
 
-	//this will not push the last one on since we are pushing on the next itteration
+	//copy all but the last one over
 	for (var i=0; i<this.players; i++) {
 		if (i!== 0 && i%2 === 0) {
-			this.bracket.round1['game'+matchIndex].push(match);
+			for (prop in match) {
+				this.bracket.round1['game'+matchIndex][prop] = match[prop];
+			}
 			match = new MatchObj();
 			matchIndex++;
 		}
 		match.players.push(copy[i]);
 	}
-	//push the last one on
-	this.bracket.round1.game4.push(match);
+	//copy the last one on
+	for (prop in match) {
+		this.bracket.round1['game'+matchIndex][prop] = match[prop];
+	}
 };
 
-TournamentSchema.methods.addGame = function() {
+TournamentSchema.methods.addGame = function(data) {
+	var round = this.bracket['round'+data.match.roundIndex];
+	var match = round['game'+data.match.matchIndex];
+	var newGame = new GameObj;
+	//game1
+	if (match.game === 0) {
+		this.bracket['round'+data.match.roundIndex]['game'+data.match.matchIndex].game = 1;
+		newGame.started = true;
+		newGame.password = 'serox';
+		newGame.creator = match.players[0].username;
+	}
+	match.games.push(newGame);
 };
 
 TournamentSchema.methods.ready = function(data) {
-	console.log('********READY**********')
-	console.log(data.match,data.user);
+	var rnd = 'round'+data.match.roundIndex;
+	var gm = 'game'+data.match.matchIndex;
+	if (!this.bracket[rnd] || !this.bracket[rnd][gm]) {
+		return false;
+	}
+	//set the players ready state
+	this.bracket[rnd][gm].ready['player'+data.match.userIndex] = true;
+	//check if we need to start the game
+	if (this.bracket[rnd][gm].ready.player0 && this.bracket[rnd][gm].ready.player1) {
+		console.log('starting game');
+		this.addGame(data);
+	}
+	return true;
 };
 
 var TournamentModel = mongoose.model('Tournament', TournamentSchema);
 
 module.exports = {
 	Tournament: TournamentModel,
-	Game: GameSchema,
-	Match: MatchSchema
+	Game: GameSchema
 }

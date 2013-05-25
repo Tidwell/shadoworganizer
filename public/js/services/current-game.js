@@ -19,7 +19,7 @@ Services.service('currentGame', function($http, $rootScope, user, currentTournam
 			syncError: false
 		}
 	};
-
+G = game;
 	//when stuff updates
 	socket.on('user:login', checkForActive);
 	socket.on('user:registered', checkForActive);
@@ -29,18 +29,17 @@ Services.service('currentGame', function($http, $rootScope, user, currentTournam
 	socket.on('tournament:update', checkForActive);
 
 	function checkForActive() {
-		if (!tournament.active || !match.games.length) { return; }
-
-		for (prop in match.games[match.games.length]) {
-			//game.game[prop] = match.games[match.games.length][prop];
-		}
+		if (!tournament.active || !match.match.game) { return; }
+		game.game.started = match.match.games[match.match.game-1].started;
+		game.game.password = match.match.games[match.match.game-1].password;
+		game.game.creator = match.match.games[match.match.game-1].creator === u.username ? 'self' : 'opponent';
 	}
 
 	checkForActive();
 
 	return {
 		get: function() {
-			return match;
+			return game;
 		}
 	};
 });

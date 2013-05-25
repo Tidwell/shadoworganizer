@@ -29,13 +29,14 @@ Services.service('currentMatch', function($http, $rootScope, user, currentTourna
 			var matchesInRound = tournament.tournament.round === 1 ? 4 : tournament.tournament.round === 2 ? 2 : 1;
 
 			for (var i = 1; i <= matchesInRound; i++) {
-				var rndMatch = tournament.tournament.bracket[round]['game'+i][0];
+				var rndMatch = tournament.tournament.bracket[round]['game'+i];
 				if (rndMatch.players[0].username === u.username) {
 					userIndex = 0;
-				} else {
+					updateData(rndMatch, userIndex);
+				} else if (rndMatch.players[1].username === u.username) {
 					userIndex = 1;
+					updateData(rndMatch, userIndex);
 				}
-				updateData(rndMatch, userIndex);
 			}
 		}
 	}
@@ -46,9 +47,10 @@ Services.service('currentMatch', function($http, $rootScope, user, currentTourna
 		console.log(rndMatch, 'match');
 
 		match.match.opponentName = rndMatch.players[oppIndex].inGameName || rndMatch.players[oppIndex].username;
-		match.match.ready = rndMatch.ready[userIndex];
-		match.match.oppReady = rndMatch.ready[oppIndex];
-		match.games = rndMatch.games;
+		match.match.ready = rndMatch.ready['player'+userIndex];
+		match.match.oppReady = rndMatch.ready['player'+oppIndex];
+		match.match.games = rndMatch.games;
+		match.match.game = rndMatch.game;
 	}
 
 	checkForActive();

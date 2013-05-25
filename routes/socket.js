@@ -12,8 +12,6 @@ mongoose.connect('mongodb://localhost/shadoworganizer');
 
 var User = require('../models/user').UserModel;
 var Tournament = require('../models/tournament').Tournament;
-var Match = require('../models/tournament').Match;
-var Game = require('../models/tournament').Game;
 
 function loadFromDB(cb) {
 	Tournament.find({active: true}, function(err,tournaments){
@@ -252,31 +250,27 @@ module.exports = function(socket, io) {
 
 	function readyTournament(data) {
 		if (!socket.user) { authError(); return; }
-		Tournament.find({_id: data.id}, function(err,tournaments){
-			if (!tournaments.length || err) {
+		Tournament.findOne({_id: data.id}, function(err,tournament){
+			if (err) {
 				socket.emit('tournament:error', {error: 'Faild to find tournament.'});
 				return;
 			}
-			var tournamentObj = tournaments[0];
+			console.log(getMatch(tournament));
+			tournament.ready({match: getMatch(tournament)});
 
-			var match = getMatch(tournamentObj);
-
-			/****** TODO *****/
-			var readied = tournamentObj.ready({match: match});
-			return;
-
-
-			if (!readied) { return; }
-
-			tournamentObj.save(function(err,tournamentObj) {
+			tournament.save(function(err,newTournamentObj) {
+				if (err) { console.log(err); }
 				//check and see if it is stored in cache and update it if it is
 				currentTournaments.forEach(function(t,i){
-					if (t.id === tournamentObj.id) {
-						currentTournaments[i] = tournamentObj;
+					if (t.id === newTournamentObj.id) {
+						currentTournaments[i] = newTournamentObj;
 					}
 				});
+				console.log('****SAVED***');
+				console.log(newTournamentObj.bracket.round1);
+				console.log('****SAVED***');
 				//notify everyone
-				io.sockets.emit('tournament:update', {tournament: tournamentObj});
+				io.sockets.emit('tournament:update', {tournament: newTournamentObj});
 			});
 		});
 	}
@@ -293,40 +287,25 @@ module.exports = function(socket, io) {
 		TODO update to make sure round is active
 	*/
 	function getMatch(tournamentObj) {
-		var returnRoundIndex;
 		var returnMatchIndex;
-		var returnMatch;
 		var userIndex;
 
-		//find the round & match
-		for (var i=1; i<=3; i++) {
-			var matchesInRound = (i === 1) ? 4 : (i===2 ? 2 : 1);
+		var round = 'round'+tournamentObj.round;
+		var matchesInRound = tournamentObj.round === 1 ? 4 : tournamentObj.round === 2 ? 2 : 1;
 
-			var match;
-
-			for (var matchIndex = 1; matchIndex <= matchesInRound; matchIndex++) {
-				match = tournamentObj.bracket['round' + i]['game'+matchIndex];
-
-				if (match.length) {
-					match = match[0];
-					//check and set if the user is in a match
-					if (match.players[0].username === socket.user.username) {
-						userIndex = 0;
-					} else if (match.players[1].username === socket.user.username) {
-						userIndex = 1;
-					}
-					//if we found a match, update the other values
-					if (typeof userIndex === 'number') {
-						returnRoundIndex = i;
-						returnMatch = match;
-						returnMatchIndex = matchIndex;
-					}
-				}
+		for (var i = 1; i <= matchesInRound; i++) {
+			var rndMatch = tournamentObj.bracket[round]['game'+i];
+			if (rndMatch.players[0].username === socket.user.username) {
+				userIndex = 0;
+				returnMatchIndex = i;
+			} else if (rndMatch.players[1].username === socket.user.username) {
+				userIndex = 1;
+				returnMatchIndex = i;
 			}
 		}
 		return {
 			userIndex: userIndex,
-			roundIndex: returnRoundIndex,
+			roundIndex: tournamentObj.round,
 			matchIndex: returnMatchIndex
 		}
 	}
