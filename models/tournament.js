@@ -54,7 +54,9 @@ var TournamentSchema = new Schema({
 			game1: [MatchSchema],
 			game2: [MatchSchema]
 		},
-		round3: [MatchSchema]
+		round3: {
+			game1: [MatchSchema]
+		}
 	},
 	winner: [condensedUser]
 });
@@ -137,6 +139,10 @@ TournamentSchema.methods.start = function() {
 TournamentSchema.methods.addGame = function() {
 };
 
+TournamentSchema.methods.ready = function(data) {
+	console.log('********READY**********')
+	console.log(data.match,data.user);
+};
 
 var TournamentModel = mongoose.model('Tournament', TournamentSchema);
 

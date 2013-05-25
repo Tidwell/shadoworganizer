@@ -75,6 +75,8 @@ module.exports = function(socket, io) {
 	socket.on('tournament:join', joinTournament);
 	socket.on('tournament:drop', dropTournament);
 
+	socket.on('tournament:ready', readyTournament);
+
 
 	function register(userData) {
 		//make sure they sent a username & password
@@ -246,6 +248,87 @@ module.exports = function(socket, io) {
 				socket.emit('tournament:dropped', {tournament: tournamentObj});
 			});
 		});
+	}
+
+	function readyTournament(data) {
+		if (!socket.user) { authError(); return; }
+		Tournament.find({_id: data.id}, function(err,tournaments){
+			if (!tournaments.length || err) {
+				socket.emit('tournament:error', {error: 'Faild to find tournament.'});
+				return;
+			}
+			var tournamentObj = tournaments[0];
+
+			var match = getMatch(tournamentObj);
+
+			/****** TODO *****/
+			var readied = tournamentObj.ready({match: match});
+			return;
+
+
+			if (!readied) { return; }
+
+			tournamentObj.save(function(err,tournamentObj) {
+				//check and see if it is stored in cache and update it if it is
+				currentTournaments.forEach(function(t,i){
+					if (t.id === tournamentObj.id) {
+						currentTournaments[i] = tournamentObj;
+					}
+				});
+				//notify everyone
+				io.sockets.emit('tournament:update', {tournament: tournamentObj});
+			});
+		});
+	}
+
+	/*
+		Return {
+			userIndex: userIndex,
+			roundIndex: returnRoundIndex,
+			matchIndex: returnMatchIndex
+		}
+
+		For the current tournament/round/match for the current user
+
+		TODO update to make sure round is active
+	*/
+	function getMatch(tournamentObj) {
+		var returnRoundIndex;
+		var returnMatchIndex;
+		var returnMatch;
+		var userIndex;
+
+		//find the round & match
+		for (var i=1; i<=3; i++) {
+			var matchesInRound = (i === 1) ? 4 : (i===2 ? 2 : 1);
+
+			var match;
+
+			for (var matchIndex = 1; matchIndex <= matchesInRound; matchIndex++) {
+				match = tournamentObj.bracket['round' + i]['game'+matchIndex];
+
+				if (match.length) {
+					match = match[0];
+					//check and set if the user is in a match
+					if (match.players[0].username === socket.user.username) {
+						userIndex = 0;
+					} else if (match.players[1].username === socket.user.username) {
+						userIndex = 1;
+					}
+					//if we found a match, update the other values
+					if (typeof userIndex === 'number') {
+						returnRoundIndex = i;
+						returnMatch = match;
+						returnMatchIndex = matchIndex;
+					}
+				}
+			}
+		}
+		return {
+			userIndex: userIndex,
+			roundIndex: returnRoundIndex,
+			matchIndex: returnMatchIndex
+		}
 	}
 
 

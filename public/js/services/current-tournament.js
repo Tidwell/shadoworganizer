@@ -77,12 +77,11 @@ Services.service('currentTournament', function($http, $rootScope, socket, user, 
 		},
 		drop: function(id) {
 			tournament.userEntered = false;
-			socket.emit('tournament:drop', {
-				id: id,
-				username: u.username,
-				password: user.getPassword()
-			});
+			socket.emit('tournament:drop', {id: tournament.tournament._id});
 			return tournament;
+		},
+		ready: function() {
+			socket.emit('tournament:ready', {id: tournament.tournament._id})
 		}
 	};
 });

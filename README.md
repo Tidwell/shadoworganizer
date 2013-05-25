@@ -6,6 +6,7 @@
 		- chat (directives? chat-pane & chat-users? pub/sub to chatId set with directive, update model? can it use scope?)
 		- user popup
 			-username, in-game name, (rating), report button-dropdown (unsportsmanship, cheating, inactive)
+			-notifications for active tournament/active game events
 
 		- finished/spectate view (allows chat in running tournaments?)
 		- general chat
@@ -14,9 +15,7 @@
 		- analytics
 
 	FE->BE
-		- create round/game subdocument models
-			=> adjust FE current-tournament view and currentTournamentController
-		- adjust round/game services
+		- business logic
 
 	BE
 
@@ -25,12 +24,7 @@
 		game notifications
 
 		chat notifications (channels)
-			player readys
-			game / match result
-			user join / drop
-			end / winner
 			chat de-activates 10 mins after tournament end
-			tournament start
 
 
 

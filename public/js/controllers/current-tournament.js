@@ -22,9 +22,7 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 	};
 
 	$scope.ready = function() {
-		$scope.currentMatch.ready = true;
-		//send to server
-
+		currentTournament.ready();
 	};
 
 	$scope.problem = function() {
@@ -67,7 +65,7 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 		d.open().then(function(result) {
 			if (result) {
 				$location.path('/tournaments');
-				currentTournament.drop($scope.tournament.tournament._id);
+				currentTournament.drop();
 			}
 		});
 	};
