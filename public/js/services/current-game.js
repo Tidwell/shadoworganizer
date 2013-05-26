@@ -53,14 +53,15 @@ Services.service('currentGame', function($http, $rootScope, user, currentTournam
 			game.game.result = null;
 			game.game.oppResult = null;
 		}
-		if (typeof newGame.firstTurn['player'+playerIndex] !== 'undefined') {
+		if (newGame.FirstTurn && typeof newGame.firstTurn['player'+playerIndex] !== 'undefined') {
 			//convert from username to a relative value
 			game.game.firstTurn = newGame.firstTurn['player'+playerIndex] === 'forgot' ? 'forgot' : newGame.firstTurn['player'+playerIndex] === u.username ? 'self' : 'opponent';
 		} else {
 			game.game.firstTurn = null;
 		}
 
-		if (typeof newGame.resultError) {
+		if (typeof newGame.resultError !== 'undefined') {
+			console.log('errror')
 			game.game.resultError = newGame.resultError;
 		} else {
 			game.game.resultError = null;

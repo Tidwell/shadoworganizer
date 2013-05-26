@@ -3,20 +3,21 @@ mongoose.connect('mongodb://localhost/shadoworganizer');
 
 var User = require('./models/user').UserModel;
 var users = [
-	{u: 'a', p: 'p'},
-	{u: 'b', p: 'p'},
-	{u: 'c', p: 'p'},
-	{u: 'd', p: 'p'},
-	{u: 'e', p: 'p'},
-	{u: 'f', p: 'p'},
-	{u: 'g', p: 'p'},
-	{u: 'h', p: 'p'}
+	{u: 'a', p: 'p', inGameName:'a-ign'},
+	{u: 'b', p: 'p', inGameName:'b-ign'},
+	{u: 'c', p: 'p', inGameName:'c-ign'},
+	{u: 'd', p: 'p', inGameName:'d-ign'},
+	{u: 'e', p: 'p', inGameName:'e-ign'},
+	{u: 'f', p: 'p', inGameName:'f-ign'},
+	{u: 'g', p: 'p', inGameName:'g-ign'},
+	{u: 'h', p: 'p', inGameName:'h-ign'}
 ];
 
 users.forEach(function (user){
 	var u = new User({
 		username: user.u,
 		password: user.p,
+		inGameName: user.inGameName || null,
 		authed: true,
 		games: {
 			wins: 0,
@@ -59,13 +60,63 @@ tournament.save(function(err){
 		tournament.addUser({username:'g', inGameName: 'g-ign'});
 		tournament.addUser({username:'h', inGameName: 'h-ign'});
 
-		//tournament.ready({match: {roundIndex: 1, matchIndex: 3, userIndex: 0}})
-		//tournament.ready({match: {roundIndex: 1, matchIndex: 1, userIndex: 1}})
+		//match1
+		tournament.ready({match: {roundIndex: 1, matchIndex: 1, userIndex: 0}})
+		tournament.ready({match: {roundIndex: 1, matchIndex: 1, userIndex: 1}})
+
+		tournament.result({match: {roundIndex: 1, matchIndex: 1, userIndex: 0}, result: tournament.bracket.round1.game1.players[0].username})
+		tournament.result({match: {roundIndex: 1, matchIndex: 1, userIndex: 1}, result: tournament.bracket.round1.game1.players[0].username})
+
+		tournament.firstTurnResult({match: {roundIndex: 1, matchIndex: 1, userIndex: 0}, result: tournament.bracket.round1.game1.players[0].username})
+		tournament.firstTurnResult({match: {roundIndex: 1, matchIndex: 1, userIndex: 1}, result: tournament.bracket.round1.game1.players[0].username})
+
+		tournament.result({match: {roundIndex: 1, matchIndex: 1, userIndex: 0}, result: tournament.bracket.round1.game1.players[0].username})
+		tournament.result({match: {roundIndex: 1, matchIndex: 1, userIndex: 1}, result: tournament.bracket.round1.game1.players[0].username})
+
+		//match2
+		tournament.ready({match: {roundIndex: 1, matchIndex: 2, userIndex: 0}})
+		tournament.ready({match: {roundIndex: 1, matchIndex: 2, userIndex: 1}})
+
+		tournament.result({match: {roundIndex: 1, matchIndex: 2, userIndex: 0}, result: tournament.bracket.round1.game2.players[0].username})
+		tournament.result({match: {roundIndex: 1, matchIndex: 2, userIndex: 1}, result: tournament.bracket.round1.game2.players[0].username})
+
+		tournament.firstTurnResult({match: {roundIndex: 1, matchIndex: 2, userIndex: 0}, result: tournament.bracket.round1.game2.players[0].username})
+		tournament.firstTurnResult({match: {roundIndex: 1, matchIndex: 2, userIndex: 1}, result: tournament.bracket.round1.game2.players[0].username})
+
+		tournament.result({match: {roundIndex: 1, matchIndex: 2, userIndex: 0}, result: tournament.bracket.round1.game2.players[0].username})
+		tournament.result({match: {roundIndex: 1, matchIndex: 2, userIndex: 1}, result: tournament.bracket.round1.game2.players[0].username})
+
+		//match3
+		tournament.ready({match: {roundIndex: 1, matchIndex: 3, userIndex: 0}})
+		tournament.ready({match: {roundIndex: 1, matchIndex: 3, userIndex: 1}})
+
+		tournament.result({match: {roundIndex: 1, matchIndex: 3, userIndex: 0}, result: tournament.bracket.round1.game3.players[0].username})
+		tournament.result({match: {roundIndex: 1, matchIndex: 3, userIndex: 1}, result: tournament.bracket.round1.game3.players[0].username})
+
+		tournament.firstTurnResult({match: {roundIndex: 1, matchIndex: 3, userIndex: 0}, result: tournament.bracket.round1.game3.players[0].username})
+		tournament.firstTurnResult({match: {roundIndex: 1, matchIndex: 3, userIndex: 1}, result: tournament.bracket.round1.game3.players[0].username})
+
+		tournament.result({match: {roundIndex: 1, matchIndex: 3, userIndex: 0}, result: tournament.bracket.round1.game3.players[0].username})
+		tournament.result({match: {roundIndex: 1, matchIndex: 3, userIndex: 1}, result: tournament.bracket.round1.game3.players[0].username})
+
+
+		//match4
+		tournament.ready({match: {roundIndex: 1, matchIndex: 4, userIndex: 0}})
+		tournament.ready({match: {roundIndex: 1, matchIndex: 4, userIndex: 1}})
+
+		tournament.result({match: {roundIndex: 1, matchIndex: 4, userIndex: 0}, result: tournament.bracket.round1.game4.players[0].username})
+		tournament.result({match: {roundIndex: 1, matchIndex: 4, userIndex: 1}, result: tournament.bracket.round1.game4.players[0].username})
+
+		tournament.firstTurnResult({match: {roundIndex: 1, matchIndex: 4, userIndex: 0}, result: tournament.bracket.round1.game4.players[0].username})
+		tournament.firstTurnResult({match: {roundIndex: 1, matchIndex: 4, userIndex: 1}, result: tournament.bracket.round1.game4.players[0].username})
+
+		tournament.result({match: {roundIndex: 1, matchIndex: 4, userIndex: 0}, result: tournament.bracket.round1.game4.players[0].username})
+		tournament.result({match: {roundIndex: 1, matchIndex: 4, userIndex: 1}, result: tournament.bracket.round1.game4.players[0].username})
 
 
 		tournament.save(function(err,t){
-			console.log(err);
-			console.log(t,t.bracket);
+			console.log(t.bracket.round1);
+			console.log(t.bracket.round2);
 		});
 	})
 })

@@ -181,28 +181,28 @@ TournamentSchema.methods.start = function() {
 };
 
 TournamentSchema.methods.addGame = function(data) {
+	console.log('adding game');
 	var round = this.bracket['round'+data.match.roundIndex];
 	var match = round['game'+data.match.matchIndex];
 	var newGame = new GameObj;
 	//game1
 	if (match.game === 0) {
-		this.bracket['round'+data.match.roundIndex]['game'+data.match.matchIndex].game = 1;
+		match.game = 1;
 		newGame.started = true;
 		newGame.password = 'serox';
 		newGame.creator = match.players[0].username; //todo make random
 	}
-	else if (match.game === 1) {
-		this.bracket['round'+data.match.roundIndex]['game'+data.match.matchIndex].game = 2;
+	else if (match.game >= 1) {
+		match.game++;
 		newGame.started = true;
-		newGame.password = 'game2';
+		newGame.password = 'game'+match.game;
 		newGame.creator = match.players[0].username; //todo reflect previous game
 	}
 	match.games.push(newGame);
-	//reset the ready states
-	this.bracket[rnd][gm].ready.player0 = false;
-	this.bracket[rnd][gm].ready.player1 = false;
+	console.log('added', match.games)
 };
 
+//Starts the match
 TournamentSchema.methods.ready = function(data) {
 	var rnd = 'round'+data.match.roundIndex;
 	var gm = 'game'+data.match.matchIndex;
@@ -219,6 +219,7 @@ TournamentSchema.methods.ready = function(data) {
 };
 
 TournamentSchema.methods.result = function(data) {
+	console.log('result', data)
 	var rnd = 'round'+data.match.roundIndex;
 	var gm = 'game'+data.match.matchIndex;
 	var gameIndex = this.bracket[rnd][gm].game-1;
@@ -233,6 +234,7 @@ TournamentSchema.methods.result = function(data) {
 };
 
 TournamentSchema.methods.firstTurnResult = function(data) {
+	console.log('first turn', data)
 	var rnd = 'round'+data.match.roundIndex;
 	var gm = 'game'+data.match.matchIndex;
 	var gameIndex = this.bracket[rnd][gm].game-1;
@@ -252,37 +254,109 @@ TournamentSchema.methods.resolve = function(data) {
 	var gameIndex = this.bracket[rnd][gm].game-1;
 
 	this.bracket[rnd][gm].games[gameIndex].resultError = null;
-	this.checkResultError(data)
-	this.checkFirstTurnError(data);
 
-	if (this.bracket[rnd][gm].games[gameIndex].resultError) {
-		console.log('result error', this.bracket[rnd][gm].games[gameIndex].resultError)
-	} else {
-		this.checkAdvanceRound(data);
+	this.checkResultError(data);
+
+	if (this.bracket[rnd][gm].game === 1) {
+		this.checkFirstTurnError(data);
 	}
+
+	if (!this.bracket[rnd][gm].games[gameIndex].resultError) {
+		this.checkResultConfirmed(data);
+		this.checkWinner(data);
+		//if there isnt a winner of the round and the last game was confirmed
+		if (!this.bracket[rnd][gm].winner && this.bracket[rnd][gm].games[gameIndex].resultConfirmed) {
+			this.addGame(data);
+		}
+		if (this.bracket[rnd][gm].winner) {
+			this.checkAdvanceRound();
+		}
+	} else {
+		console.log('error', this.bracket[rnd][gm].games[gameIndex].resultError)
+	}
+
+	console.log('resolved')
 }
 
-TournamentSchema.methods.checkAdvanceRound = function(data) {
+TournamentSchema.methods.checkResultConfirmed = function(data) {
 	var rnd = 'round'+data.match.roundIndex;
 	var gm = 'game'+data.match.matchIndex;
 	var gameIndex = this.bracket[rnd][gm].game-1;
 
+	if (this.bracket[rnd][gm].winner) { return; }
+
 	//if either not filled in abort
 	if (!this.bracket[rnd][gm].games[gameIndex].result.player0 || !this.bracket[rnd][gm].games[gameIndex].result.player1) {
-		console.log('both players not filled in')
 		return;
 	}
 
-	if (!this.bracket[rnd][gm].games[gameIndex].firstTurn.player0 || !this.bracket[rnd][gm].games[gameIndex].firstTurn.player1) { return; }
+	if (this.bracket[rnd][gm].game === 1) {
+		if (!this.bracket[rnd][gm].games[gameIndex].firstTurn.player0 || !this.bracket[rnd][gm].games[gameIndex].firstTurn.player1) { return; }
+	}
 
 	//if they match
 	if (this.bracket[rnd][gm].games[gameIndex].result.player0 === this.bracket[rnd][gm].games[gameIndex].result.player1) {
-		console.log('match confirmed');
 		this.bracket[rnd][gm].games[gameIndex].resultConfirmed = true;
-		console.log('adding game')
-		this.addGame(data);
 	}
 };
+
+TournamentSchema.methods.checkAdvanceRound = function() {
+	if (this.round === 3) { return; }
+	var round = this.bracket['round'+this.round];
+	var allgamesComplete = true;
+	var winners = [];
+	for (match in round) {
+		if (match.indexOf('game') !== -1) {
+			if (!round[match].winner) {
+				allgamesComplete = false;
+			} else {
+				var winnerIndex = round[match].players[0].username===round[match].winner?0:1;
+				winners.push(round[match].players[winnerIndex]);
+			}
+		}
+	}
+	if (!allgamesComplete) { return; }
+
+	this.round++;
+
+	var match = new MatchObj();
+	var matchIndex = 1;
+	winners.reverse();
+	//copy all but the last one over
+	for (var i=0; i<winners.length; i++) {
+		if (i!== 0 && i%2 === 0) {
+			for (prop in match) {
+				this.bracket['round'+this.round]['game'+matchIndex][prop] = match[prop];
+			}
+			match = new MatchObj();
+			matchIndex++;
+		}
+		match.players.push(winners[i]);
+	}
+	//copy the last one on
+	for (prop in match) {
+		this.bracket['round'+this.round]['game'+matchIndex][prop] = match[prop];
+	}
+}
+
+TournamentSchema.methods.checkWinner = function(data) {
+	var self = this;
+	var rnd = 'round'+data.match.roundIndex;
+	var gm = 'game'+data.match.matchIndex;
+	var gameIndex = this.bracket[rnd][gm].game-1;
+	if (this.bracket[rnd][gm].games.length < 2 || !this.bracket[rnd][gm].games[this.bracket[rnd][gm].games.length-1].resultConfirmed) {
+		return false;
+	}
+
+	var state = [0,0];
+	this.bracket[rnd][gm].games.forEach(function(game){
+		state[game.result.player0===self.bracket[rnd][gm].players[0].username?0:1]++;
+	});
+	console.log('state is ',state)
+	if (state.indexOf(2) !== -1) {
+		this.bracket[rnd][gm].winner = this.bracket[rnd][gm].players[state.indexOf(2)].username;
+	}
+}
 
 TournamentSchema.methods.checkFirstTurnError = function(data) {
 	var rnd = 'round'+data.match.roundIndex;

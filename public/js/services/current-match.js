@@ -51,6 +51,10 @@ Services.service('currentMatch', function($http, $rootScope, user, currentTourna
 		match.match.oppReady = rndMatch.ready['player'+oppIndex];
 		match.match.games = rndMatch.games;
 		match.match.game = rndMatch.game;
+
+		if (rndMatch.winner) {
+			match.match.winner = rndMatch.winner===u.username?'self':'opponent';
+		}
 	}
 
 	checkForActive();
