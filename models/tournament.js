@@ -210,6 +210,19 @@ TournamentSchema.methods.ready = function(data) {
 	return true;
 };
 
+TournamentSchema.methods.result = function(data) {
+	var rnd = 'round'+data.match.roundIndex;
+	var gm = 'game'+data.match.matchIndex;
+	var gameIndex = this.bracket[rnd][gm].game-1;
+
+	if (!this.bracket[rnd] || !this.bracket[rnd][gm]) {
+		return false;
+	}
+	//set the players result
+	this.bracket[rnd][gm].games[gameIndex].result['player'+data.match.userIndex] = data.result;
+	return true;
+};
+
 var TournamentModel = mongoose.model('Tournament', TournamentSchema);
 
 module.exports = {

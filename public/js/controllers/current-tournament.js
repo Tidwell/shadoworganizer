@@ -13,10 +13,9 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 	});
 
 	$scope.gameResult = function(result) {
-		$scope.currentGame.result = result;
-		//send to server
+		currentGame.result(result);
 
-		if ($scope.currentMatch.game === 1) {
+		if ($scope.currentMatch.match.game === 1) {
 			$scope.confirmFirstTurn();
 		}
 	};

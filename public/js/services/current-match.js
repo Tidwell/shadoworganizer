@@ -45,7 +45,7 @@ Services.service('currentMatch', function($http, $rootScope, user, currentTourna
 		var oppIndex = Number(!userIndex);
 
 		console.log(rndMatch, 'match');
-
+		match.match.players = rndMatch.players;
 		match.match.opponentName = rndMatch.players[oppIndex].inGameName || rndMatch.players[oppIndex].username;
 		match.match.ready = rndMatch.ready['player'+userIndex];
 		match.match.oppReady = rndMatch.ready['player'+oppIndex];

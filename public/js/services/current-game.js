@@ -3,6 +3,8 @@ Services.service('currentGame', function($http, $rootScope, user, currentTournam
 	var match = currentMatch.get();
 	var u = user.get();
 
+	var playerIndex;
+
 	var game = {
 		game: {
 			started: false,
@@ -19,7 +21,6 @@ Services.service('currentGame', function($http, $rootScope, user, currentTournam
 			syncError: false
 		}
 	};
-G = game;
 	//when stuff updates
 	socket.on('user:login', checkForActive);
 	socket.on('user:registered', checkForActive);
@@ -30,9 +31,20 @@ G = game;
 
 	function checkForActive() {
 		if (!tournament.active || !match.match.game) { return; }
+		playerIndex = match.match.players[0].username === u.username ? 0 : 1;
+
 		game.game.started = match.match.games[match.match.game-1].started;
 		game.game.password = match.match.games[match.match.game-1].password;
 		game.game.creator = match.match.games[match.match.game-1].creator === u.username ? 'self' : 'opponent';
+
+		if (match.match.games[match.match.game-1].result) {
+			if (match.match.games[match.match.game-1].result['player'+playerIndex]) {
+				game.game.result = match.match.games[match.match.game-1].result['player'+playerIndex] === u.username ? 'win' : 'loss';
+			}
+			if (match.match.games[match.match.game-1].result['player'+Number(!playerIndex)]) {
+				game.game.oppResult = match.match.games[match.match.game-1].result['player'+Number(!playerIndex)] === u.username ? 'loss' : 'win';
+			}
+		}
 	}
 
 	checkForActive();
@@ -40,6 +52,9 @@ G = game;
 	return {
 		get: function() {
 			return game;
+		},
+		result: function(result){
+			socket.emit('tournament:result', {id: tournament.tournament._id, result: result});
 		}
 	};
 });
