@@ -3,8 +3,6 @@ Services.service('currentGame', function($http, $rootScope, user, currentTournam
 	var match = currentMatch.get();
 	var u = user.get();
 
-	var playerIndex;
-
 	var game = {
 		game: {
 			started: false,
@@ -31,19 +29,41 @@ Services.service('currentGame', function($http, $rootScope, user, currentTournam
 
 	function checkForActive() {
 		if (!tournament.active || !match.match.game) { return; }
-		playerIndex = match.match.players[0].username === u.username ? 0 : 1;
 
-		game.game.started = match.match.games[match.match.game-1].started;
-		game.game.password = match.match.games[match.match.game-1].password;
-		game.game.creator = match.match.games[match.match.game-1].creator === u.username ? 'self' : 'opponent';
+		var playerIndex = match.match.players[0].username === u.username ? 0 : 1;
+		var newGame = match.match.games[match.match.game-1];
 
-		if (match.match.games[match.match.game-1].result) {
-			if (match.match.games[match.match.game-1].result['player'+playerIndex]) {
-				game.game.result = match.match.games[match.match.game-1].result['player'+playerIndex] === u.username ? 'win' : 'loss';
+		//set required props
+		if (!newGame) { return; }
+		game.game.started = newGame.started;
+		game.game.password = newGame.password;
+		game.game.creator = newGame.creator === u.username ? 'self' : 'opponent';
+
+		//set optional props
+		if (newGame.result) {
+			if (newGame.result['player'+playerIndex]) {
+				//convert from username to a relative value
+				game.game.result = newGame.result['player'+playerIndex] === u.username ? 'win' : 'loss';
 			}
-			if (match.match.games[match.match.game-1].result['player'+Number(!playerIndex)]) {
-				game.game.oppResult = match.match.games[match.match.game-1].result['player'+Number(!playerIndex)] === u.username ? 'loss' : 'win';
+			if (newGame.result['player'+Number(!playerIndex)]) {
+				//convert from username to a relative value
+				game.game.oppResult = newGame.result['player'+Number(!playerIndex)] === u.username ? 'loss' : 'win';
 			}
+		} else {
+			game.game.result = null;
+			game.game.oppResult = null;
+		}
+		if (typeof newGame.firstTurn['player'+playerIndex] !== 'undefined') {
+			//convert from username to a relative value
+			game.game.firstTurn = newGame.firstTurn['player'+playerIndex] === 'forgot' ? 'forgot' : newGame.firstTurn['player'+playerIndex] === u.username ? 'self' : 'opponent';
+		} else {
+			game.game.firstTurn = null;
+		}
+
+		if (typeof newGame.resultError) {
+			game.game.resultError = newGame.resultError;
+		} else {
+			game.game.resultError = null;
 		}
 	}
 
@@ -55,6 +75,9 @@ Services.service('currentGame', function($http, $rootScope, user, currentTournam
 		},
 		result: function(result){
 			socket.emit('tournament:result', {id: tournament.tournament._id, result: result});
+		},
+		firstTurnResult: function(result) {
+			socket.emit('tournament:first-turn', {id: tournament.tournament._id, result: result});
 		}
 	};
 });

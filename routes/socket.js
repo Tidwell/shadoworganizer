@@ -75,6 +75,7 @@ module.exports = function(socket, io) {
 
 	socket.on('tournament:ready', readyTournament);
 	socket.on('tournament:result', resultTournament);
+	socket.on('tournament:first-turn', firstTurnTournament);
 
 
 	function register(userData) {
@@ -287,6 +288,36 @@ module.exports = function(socket, io) {
 			data.result = data.result === 'win' ? socket.user.username : tournament.bracket[rnd][gm].players[Number(!match.userIndex)].username;
 
 			tournament.result({match: match, result: data.result});
+
+			tournament.save(function(err,newTournamentObj) {
+				if (err) { console.log(err); }
+				//check and see if it is stored in cache and update it if it is
+				currentTournaments.forEach(function(t,i){
+					if (t.id === newTournamentObj.id) {
+						currentTournaments[i] = newTournamentObj;
+					}
+				});
+				//notify everyone
+				io.sockets.emit('tournament:update', {tournament: newTournamentObj});
+			});
+		});
+	}
+
+	function firstTurnTournament(data) {
+		if (!socket.user) { authError(); return; }
+		Tournament.findOne({_id: data.id}, function(err,tournament){
+			if (err) {
+				socket.emit('tournament:error', {error: 'Faild to find tournament.'});
+				return;
+			}
+			var match = getMatch(tournament);
+			var rnd = 'round'+match.roundIndex;
+			var gm = 'game'+match.matchIndex;
+
+			//normalize the result from their perspective into just the username or 'forgot'
+			data.result = data.result === 'self' ? socket.user.username : data.result === 'opponent' ? tournament.bracket[rnd][gm].players[Number(!match.userIndex)].username : 'forgot';
+
+			tournament.firstTurnResult({match: match, result: data.result});
 
 			tournament.save(function(err,newTournamentObj) {
 				if (err) { console.log(err); }

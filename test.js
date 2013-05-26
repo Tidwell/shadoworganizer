@@ -57,7 +57,7 @@ tournament.save(function(err){
 		tournament.addUser({username:'e', inGameName: 'e-ign'});
 		tournament.addUser({username:'f', inGameName: 'f-ign'});
 		tournament.addUser({username:'g', inGameName: 'g-ign'});
-		//tournament.addUser({username:'h', inGameName: 'h-ign'});
+		tournament.addUser({username:'h', inGameName: 'h-ign'});
 
 		//tournament.ready({match: {roundIndex: 1, matchIndex: 3, userIndex: 0}})
 		//tournament.ready({match: {roundIndex: 1, matchIndex: 1, userIndex: 1}})

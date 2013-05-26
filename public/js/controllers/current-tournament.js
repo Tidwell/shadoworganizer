@@ -15,7 +15,7 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 	$scope.gameResult = function(result) {
 		currentGame.result(result);
 
-		if ($scope.currentMatch.match.game === 1) {
+		if ($scope.currentMatch.match.game === 1 && !$scope.currentGame.game.firstTurn) {
 			$scope.confirmFirstTurn();
 		}
 	};
@@ -44,11 +44,7 @@ function CurrentTournamentController($scope, $location, $dialog, currentTourname
 		});
 		d.open().then(function(result) {
 			if (result) {
-				$scope.currentGame.firstTurn = result;
-				//send to server
-
-				//reset the error
-				$scope.currentGame.resultError = null;
+				currentGame.firstTurnResult(result);
 			}
 		});
 	};

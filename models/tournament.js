@@ -189,9 +189,18 @@ TournamentSchema.methods.addGame = function(data) {
 		this.bracket['round'+data.match.roundIndex]['game'+data.match.matchIndex].game = 1;
 		newGame.started = true;
 		newGame.password = 'serox';
-		newGame.creator = match.players[0].username;
+		newGame.creator = match.players[0].username; //todo make random
+	}
+	else if (match.game === 1) {
+		this.bracket['round'+data.match.roundIndex]['game'+data.match.matchIndex].game = 2;
+		newGame.started = true;
+		newGame.password = 'game2';
+		newGame.creator = match.players[0].username; //todo reflect previous game
 	}
 	match.games.push(newGame);
+	//reset the ready states
+	this.bracket[rnd][gm].ready.player0 = false;
+	this.bracket[rnd][gm].ready.player1 = false;
 };
 
 TournamentSchema.methods.ready = function(data) {
@@ -204,7 +213,6 @@ TournamentSchema.methods.ready = function(data) {
 	this.bracket[rnd][gm].ready['player'+data.match.userIndex] = true;
 	//check if we need to start the game
 	if (this.bracket[rnd][gm].ready.player0 && this.bracket[rnd][gm].ready.player1) {
-		console.log('starting game');
 		this.addGame(data);
 	}
 	return true;
@@ -220,8 +228,104 @@ TournamentSchema.methods.result = function(data) {
 	}
 	//set the players result
 	this.bracket[rnd][gm].games[gameIndex].result['player'+data.match.userIndex] = data.result;
+	this.resolve(data);
 	return true;
 };
+
+TournamentSchema.methods.firstTurnResult = function(data) {
+	var rnd = 'round'+data.match.roundIndex;
+	var gm = 'game'+data.match.matchIndex;
+	var gameIndex = this.bracket[rnd][gm].game-1;
+
+	if (!this.bracket[rnd] || !this.bracket[rnd][gm]) {
+		return false;
+	}
+	//set the players first turn result
+	this.bracket[rnd][gm].games[gameIndex].firstTurn['player'+data.match.userIndex] = data.result;
+	this.resolve(data);
+	return true;
+};
+
+TournamentSchema.methods.resolve = function(data) {
+	var rnd = 'round'+data.match.roundIndex;
+	var gm = 'game'+data.match.matchIndex;
+	var gameIndex = this.bracket[rnd][gm].game-1;
+
+	this.bracket[rnd][gm].games[gameIndex].resultError = null;
+	this.checkResultError(data)
+	this.checkFirstTurnError(data);
+
+	if (this.bracket[rnd][gm].games[gameIndex].resultError) {
+		console.log('result error', this.bracket[rnd][gm].games[gameIndex].resultError)
+	} else {
+		this.checkAdvanceRound(data);
+	}
+}
+
+TournamentSchema.methods.checkAdvanceRound = function(data) {
+	var rnd = 'round'+data.match.roundIndex;
+	var gm = 'game'+data.match.matchIndex;
+	var gameIndex = this.bracket[rnd][gm].game-1;
+
+	//if either not filled in abort
+	if (!this.bracket[rnd][gm].games[gameIndex].result.player0 || !this.bracket[rnd][gm].games[gameIndex].result.player1) {
+		console.log('both players not filled in')
+		return;
+	}
+
+	if (!this.bracket[rnd][gm].games[gameIndex].firstTurn.player0 || !this.bracket[rnd][gm].games[gameIndex].firstTurn.player1) { return; }
+
+	//if they match
+	if (this.bracket[rnd][gm].games[gameIndex].result.player0 === this.bracket[rnd][gm].games[gameIndex].result.player1) {
+		console.log('match confirmed');
+		this.bracket[rnd][gm].games[gameIndex].resultConfirmed = true;
+		console.log('adding game')
+		this.addGame(data);
+	}
+};
+
+TournamentSchema.methods.checkFirstTurnError = function(data) {
+	var rnd = 'round'+data.match.roundIndex;
+	var gm = 'game'+data.match.matchIndex;
+	var gameIndex = this.bracket[rnd][gm].game-1;
+
+	//if either not filled in abort
+	if (!this.bracket[rnd][gm].games[gameIndex].firstTurn.player0 || !this.bracket[rnd][gm].games[gameIndex].firstTurn.player1) { return; }
+
+	//if both players forgot, thats a problem
+	if (this.bracket[rnd][gm].games[gameIndex].firstTurn.player0 === 'forgot' &&
+		this.bracket[rnd][gm].games[gameIndex].firstTurn.player1 === 'forgot') {
+		this.bracket[rnd][gm].games[gameIndex].resultError = 'firstturn';
+		return;
+	}
+
+	//if one player forgot, no problem (we do this first so we know all forgetting has been taken care of)
+	if (this.bracket[rnd][gm].games[gameIndex].firstTurn.player0 === 'forgot' ||
+		this.bracket[rnd][gm].games[gameIndex].firstTurn.player1 === 'forgot') {
+		return;
+	}
+
+	//if they both dont match, thats a problem
+	if (this.bracket[rnd][gm].games[gameIndex].firstTurn.player0 !== this.bracket[rnd][gm].games[gameIndex].firstTurn.player1) {
+		this.bracket[rnd][gm].games[gameIndex].resultError = 'firstturn';
+		return;
+	}
+};
+
+TournamentSchema.methods.checkResultError = function(data) {
+	var rnd = 'round'+data.match.roundIndex;
+	var gm = 'game'+data.match.matchIndex;
+	var gameIndex = this.bracket[rnd][gm].game-1;
+
+	//if either not filled in, abort
+	if (!this.bracket[rnd][gm].games[gameIndex].result.player0 || !this.bracket[rnd][gm].games[gameIndex].result.player1) { return; }
+
+	//if they dont match
+	if (this.bracket[rnd][gm].games[gameIndex].result.player0 !== this.bracket[rnd][gm].games[gameIndex].result.player1) {
+		this.bracket[rnd][gm].games[gameIndex].resultError = 'winner';
+		return;
+	}
+}
 
 var TournamentModel = mongoose.model('Tournament', TournamentSchema);
 

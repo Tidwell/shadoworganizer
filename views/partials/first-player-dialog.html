@@ -4,10 +4,10 @@
 <div class="modal-body">
 	<p>
 		<button class="btn btn-info" ng-click="close('self')">You Went First</button>
-		<button class="btn btn-info" ng-click="close('opponent')">{{currentMatch.opponentName}} Went First</button>
+		<button class="btn btn-info" ng-click="close('opponent')">{{currentMatch.match.opponentName}} Went First</button>
 		<button class="btn btn-info" ng-click="close('forgot')">Don't Know</button>
 	</p>
 </div>
 <div class="modal-footer">
-	<button ng-click="close()" class="btn btn-primary" >Close</button>
+	<button ng-click="close('forgot')" class="btn" >Don't Know</button>
 </div>
